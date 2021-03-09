@@ -1,0 +1,35 @@
+<template>
+    <div class="button">${text}</div>
+</template>
+
+<script>
+    ({
+        props: {
+            text: {
+                type: 'String'
+            },
+            test: {
+                type: 'Number'
+            }
+        },
+        mount: function(){
+            console.log(this)
+        },
+        events: {
+            click: function(e) {
+                console.log(e.target)
+            }
+        }
+    })
+</script>
+
+<style>
+    .button {
+        border-radius: 8px;
+        padding: 8px 16px;
+        color: #fff;
+        background-color: blue;
+        font-family: sans-serif;
+        appearance: button;
+    }
+</style>
