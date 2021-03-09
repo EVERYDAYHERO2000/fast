@@ -1,0 +1,22 @@
+{
+  "name": "fast",
+  "version": "1.0.0",
+  "description": "fast html/css/js templates for designers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EVERYDAYHERO2000/fast.git"
+  },
+  "keywords": [
+    "templates"
+  ],
+  "author": "ilyaflare@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EVERYDAYHERO2000/fast/issues"
+  },
+  "homepage": "https://github.com/EVERYDAYHERO2000/fast#readme"
+}
