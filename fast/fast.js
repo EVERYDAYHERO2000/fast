@@ -3,6 +3,7 @@
     const __fast__ = window.__fast__ = {
         components: {},
         config: {
+            tagSign: ':',
             components: [],
             css: {
 
@@ -21,7 +22,7 @@
             const tagName = elem.tagName;
 
             // если : то компонент
-            if (tagName && tagName.includes(':')) {
+            if (tagName && tagName.includes(__fast__.config.tagSign)) {
 
                 const componentName = tagName[0] + tagName.toLowerCase().slice(1, tagName.length - 1);
 
@@ -87,8 +88,6 @@
             
             const template = parser.parseFromString(component.template(props), "text/html").body;
             const elems = template.querySelectorAll('*');
-            
-            console.log(elems)
 
             for (let e of elems) {
                 for (let a of e.attributes) {
@@ -215,7 +214,7 @@
 
             let vars = '';
             for (let v in propsKeys) {
-                vars += `const ${propsKeys[v]} = arguments[0].${propsKeys[v]}.value || 'undefined';\n`
+                vars += `const ${propsKeys[v]} = props.${propsKeys[v]}.value || 'undefined';\n`
             }
 
             return new Function('props', `${vars} return \`${html}\``);
