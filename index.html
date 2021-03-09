@@ -5,6 +5,15 @@
     </head>
     <body>
         <Sidebar:></Sidebar:>
-        <script src="fast/fast.js" type="module"></script>
+        <button: text="Кнопка"></button:>
+        <script src="fast/fast.js"></script>
+        <script>
+            __fast__.init(
+                {
+                    css: `body {margin:0; padding:0; font-family: sans-serif}`
+                }, 
+                document.body.querySelectorAll('*')
+            );
+        </script>
     </body>
 </html>

@@ -4,25 +4,37 @@
         components: {},
         config: {
             tagSign: ':',
+            componentsDirectory: 'src/components',
             components: [],
-            css: {
-
-            }
+            css: ''
         },
-        findComponents: findComponents
+        findComponents: findComponents,
+        init: init,
+        installComponent: installComponent
     }
 
-    const allElems = document.body.querySelectorAll('*');
+    /**
+     * Инициализация `__fast__`.
+     * @param {Object} config - конфиг
+     * @param {NodeList} entryElems - набор узлов документа 
+     */
+    function init(config, entryElems) {
+        __fast__.config = {...__fast__.config, ...config};
+        addStyles(__fast__.config.css);
+        return (entryElems) ? findComponents(entryElems) : false;
+    }
 
-    findComponents(allElems);
-
-    //найти в коллекции все компоненты
+    /**
+     * Проверить все элементы в коллекции.
+     * 
+     * @param {NodeList} elems - набор узлов для проверки
+     */
     function findComponents(elems){
         for (const elem of elems) {
 
             const tagName = elem.tagName;
 
-            // если : то компонент
+            // если `:` то компонент
             if (tagName && tagName.includes(__fast__.config.tagSign)) {
 
                 const componentName = tagName[0] + tagName.toLowerCase().slice(1, tagName.length - 1);
@@ -116,14 +128,13 @@
             if (newElem.hasAttribute(attr)){
                 newElem.setAttribute(
                     attr, 
-                    newElem.getAttribute(attr) + ' ' + simpleAttributes[attr]
+                    `${newElem.getAttribute(attr)} ${simpleAttributes[attr]}`
                 );
             } else {
                 newElem.setAttribute(attr, simpleAttributes[attr]);
             }
         }
         
-
         const newElemSlots = newElem.querySelectorAll('slot');
         
         //перенести дочернии узлы в слоты
@@ -175,7 +186,7 @@
 
     //загрузка компонента
     function loadComponent(componentName, callback){
-        fetch(`src/components/${componentName}/${componentName}.html`)  
+        fetch(`${__fast__.config.componentsDirectory}/${componentName}/${componentName}.html`)  
         .then(function(response) {
             return response.text()
         })
@@ -187,7 +198,12 @@
         });    
     }
 
-    //инсталирование компонента
+    /**
+     * Инсталировать компонент в `__fast__.components[componentName]`.
+     * 
+     * @param {String} context - строка, содержимое файла компонента
+     * @param {String} componentName - название компонента
+     */
     function installComponent(context, componentName) {
         const parser = new DOMParser();
         const fragment = parser.parseFromString(context, "text/html");
@@ -201,7 +217,10 @@
             }
             return methods;
         })();
-        const fragmentStyle = fragment.querySelector('style');
+        const fragmentStyle = fragment.querySelector('style').textContent.replaceAll(
+            '@component', 
+            `${__fast__.config.componentsDirectory}/${componentName}/assets`
+        );
 
         const props = (fragmentScript.props) ? fragmentScript.props : {};
         const methods = (fragmentScript.methods) ? fragmentScript.methods : {};
@@ -215,7 +234,7 @@
 
             let vars = '';
             for (let v in propsKeys) {
-                vars += `const ${propsKeys[v]} = props.${propsKeys[v]}.value || 'undefined';\n`
+                vars += `const ${propsKeys[v]} = (props.${propsKeys[v]} && props.${propsKeys[v]}.value) ? props.${propsKeys[v]}.value : 'undefined';\n`
             }
 
             return new Function('props', `${vars} return \`${html}\``);
@@ -229,13 +248,30 @@
             methods: methods
         }
 
-        fragmentStyle.innerText = fragmentStyle.innerText.replaceAll('@component', `src/components/${componentName}/assets`);
-
-        document.head.appendChild(fragmentStyle);
+        addStyles(fragmentStyle);
 
         __fast__.components[componentName] = component;
 
         return component;
+    }
+
+    /**
+     * Добавляет правила css.
+     * 
+     * @param {String} cssRules - строка с css
+     */
+    function addStyles(cssRules) {
+        let fastStyles = document.getElementById('fast-styles')
+        if (!fastStyles) {
+            fastStyles = document.createElement('style');
+            fastStyles.setAttribute('id', 'fast-styles');
+            document.head.append(fastStyles);
+        } 
+
+        fastStyles.textContent += `${cssRules}\n`;
+
+        return fastStyles.textContent;
+        
     }
 
 
