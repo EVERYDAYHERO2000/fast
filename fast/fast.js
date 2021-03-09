@@ -185,6 +185,12 @@
     }
 
     //загрузка компонента
+    /**
+     * Загрузить компонент из файла.
+     * 
+     * @param {String} componentName - название компонента
+     * @param {*} callback - колбек
+     */
     function loadComponent(componentName, callback){
         fetch(`${__fast__.config.componentsDirectory}/${componentName}/${componentName}.html`)  
         .then(function(response) {
