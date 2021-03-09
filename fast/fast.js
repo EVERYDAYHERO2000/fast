@@ -8,7 +8,8 @@
             css: {
 
             }
-        }
+        },
+        findComponents: findComponents
     }
 
     const allElems = document.body.querySelectorAll('*');
