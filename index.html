@@ -5,6 +5,13 @@
     </head>
     <body>
         <Sidebar:></Sidebar:>
+        <button: text="кнопка"></button:>
+        <card:>
+            <slot name="header">
+            <button: text="Кнопка"></button:>
+            </slot>
+        </card:>
+
         <script src="fast/fast.js"></script>
         <script>
             __fast__.init(
