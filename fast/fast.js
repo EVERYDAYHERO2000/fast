@@ -3,7 +3,7 @@
     components: {},
     /** Конфиг */
     config: {
-      /** Символ компонента */ 
+      /** Символ компонента */
       tagSign: ":",
       /** Директория с компонентами */
       componentsDirectory: "src/components",
@@ -25,9 +25,15 @@
    * @param {NodeList} entryElems - набор узлов документа
    */
   function init(config, entryElems) {
+    entryElems = entryElems || document.body.querySelectorAll('*');  
     __fast__.config = { ...__fast__.config, ...config };
     addStyles(__fast__.config.css);
-    return entryElems ? findComponents(entryElems) : false;
+    loadComponents(__fast__.config.components, function (result) {
+      result.forEach(function (r) {
+        installComponent(r.context, r.name);
+      });
+      findComponents(entryElems);
+    });
   }
 
   /**
@@ -36,47 +42,46 @@
    * @param {NodeList} elems - набор узлов для проверки
    */
   function findComponents(elems) {
-    const allComponents = {};
-    const allComponentsArray = [];
+    /** компоненты которые необходимо установить */
+    const needToInstall = [];
+    /** элементы которые нужно отрендерить */
+    const needToRender = [];
 
     for (const elem of elems) {
       const tagName = elem.tagName;
 
-      // если `:` то компонент
       if (tagName && tagName.includes(__fast__.config.tagSign)) {
         const componentName =
           tagName[0] + tagName.toLowerCase().slice(1, tagName.length - 1);
 
-          if (!__fast__.components[componentName]) {
-            allComponents[componentName] = null;
-          } else {
-            renderComponent(elem, componentName); 
-          }
-      }
-    }
-
-    for (let i in allComponents) {
-      if (!__fast__.components[i]) allComponentsArray.push(i);
-    }
-
-    if (allComponentsArray.length) loadComponents(allComponentsArray, function (result) {
-      for (let r in result) {
-        installComponent(result[r].context, result[r].name);
-      }
-
-      for (const elem of elems) {
-        const tagName = elem.tagName;
-
-        // если `:` то компонент
-        if (tagName && tagName.includes(__fast__.config.tagSign)) {
-          const componentName =
-            tagName[0] + tagName.toLowerCase().slice(1, tagName.length - 1);
-          if (elem.parentElement) renderComponent(elem, componentName);
+        if (!__fast__.components[componentName]) {
+          needToInstall.push(componentName);
+          __fast__.components[componentName] = {};
         }
-      }
-    });
 
-    return elems;
+        needToRender.push({
+          componentName: componentName,
+          component: __fast__.components[componentName],
+          elem: elem,
+        });
+      }
+    }
+
+    if (needToInstall.length) {
+      loadComponents(needToInstall, function (result) {
+        result.forEach(function (r) {
+          installComponent(r.context, r.name);
+        });
+
+        needToRender.forEach(function (e) {
+          if (e.elem.parentElement) renderComponent(e.elem, e.componentName);
+        });
+      });
+    } else {
+      needToRender.forEach(function (e) {
+        renderComponent(e.elem, e.componentName);
+      });
+    }
   }
 
   /**
@@ -139,10 +144,16 @@
         }
       }
 
-      return template.children[0];
+      const newElement = template.children[0];
+
+      newElement.__created = component.created;
+      newElement.__mounted = component.mounted;
+
+      return newElement;
     })(props);
 
     findComponents(newElem.querySelectorAll("*"));
+    newElem.__created(newElem);
 
     //установить простые атрибуты для узла
     for (let attr in simpleAttributes) {
@@ -157,7 +168,7 @@
     }
 
     const newElemSlots = newElem.querySelectorAll("slot");
-
+    
     //перенести дочернии узлы в слоты
     if (entryChilds.length && newElemSlots.length) {
       //если нужно по слотам
@@ -177,38 +188,39 @@
         сhildToSlot(entryChilds, newElemSlots[0]);
       }
     }
-
+    
     elem.parentElement.replaceChild(newElem, elem);
-
-    /**
-     * Переместить узлы в слот.
-     *
-     * @param {NodeList} childs - набор узлов для перемещения
-     * @param {Element} slot - узел слота `<slot>`
-     */
-    function сhildToSlot(childs, slot) {
-      const fragment = document.createDocumentFragment();
-
-      findComponents(childs);
-
-      for (let child of childs) {
-        const clonedChild = child.cloneNode(true);
-        fragment.appendChild(clonedChild);
-      }
-
-      slot.parentElement.replaceChild(fragment, slot);
-
-      return childs;
-    }
+    newElem.__mounted(newElem);
 
     return elem;
   }
 
   /**
+   * Переместить узлы в слот.
+   *
+   * @param {NodeList} childs - набор узлов для перемещения
+   * @param {Element} slot - узел слота `<slot>`
+   */
+  function сhildToSlot(childs, slot) {
+    const fragment = document.createDocumentFragment();
+
+    findComponents(childs);
+
+    for (let child of childs) {
+      const clonedChild = child.cloneNode(true);
+      fragment.appendChild(clonedChild);
+    }
+
+    slot.parentElement.replaceChild(fragment, slot);
+
+    return childs;
+  }
+
+  /**
    * Загрузить компоненты из файлов.
-   * 
+   *
    * @param {Array} components - массив строк с названиями компонентов
-   * @param {Function} callback - колбек 
+   * @param {Function} callback - колбек
    */
   function loadComponents(components, callback) {
     const list = [];
@@ -248,14 +260,27 @@
     const fragment = parser.parseFromString(context, "text/html");
     const fragmentTemplate = fragment.querySelector("template").content;
     const fragmentScript = (function () {
-      const raw = fragment.querySelector("script").innerText.trim();
-      const methods = {
-        beforeMount: null,
-        mount: null,
-        ...new Function(`return ${raw.slice(1, raw.length - 1)}`)(),
+      const raw = (function () {
+        let trimed = fragment.querySelector("script").innerText.trim();
+        trimed =
+          trimed[trimed.length - 1] == ";"
+            ? trimed.slice(0, trimed.length - 1)
+            : trimed;
+        trimed = trimed.slice(1, trimed.length - 1);
+        return trimed;
+      })();
+
+      const result = {
+        props: {},
+        created: (e) => false,
+        mounted: (e) => false,
+        methods: {},
+        ...new Function(`return ${raw}`)(),
       };
-      return methods;
+
+      return result;
     })();
+
     const fragmentStyle = fragment
       .querySelector("style")
       .textContent.replaceAll(
@@ -263,10 +288,7 @@
         `${__fast__.config.componentsDirectory}/${componentName}/assets`
       );
 
-    const props = fragmentScript.props ? fragmentScript.props : {};
-    const methods = fragmentScript.methods ? fragmentScript.methods : {};
     const template = (function (props, fragmentTemplate) {
-      props = props || {};
       let propsKeys = [];
       let html = fragmentTemplate.children[0].outerHTML;
       for (let p in props) {
@@ -279,18 +301,29 @@
       }
 
       return new Function("props", `${vars} return \`${html}\``);
-    })(props, fragmentTemplate);
+    })(fragmentScript.props, fragmentTemplate);
 
-    const component = {
-      template: template,
-      style: fragmentStyle,
-      props: props,
-      methods: methods,
-    };
+    if (!__fast__.components[componentName])
+      __fast__.components[componentName] = {};
+
+    const component = __fast__.components[componentName];
+
+    /** {String} Имя компонента */
+    component.name = componentName;
+    /** {Function} Шаблон */
+    component.template = template;
+    /** {String} css стили для шаблона */
+    component.style = fragmentStyle;
+    /** {Object} Свойства для отрисовки шаблона */
+    component.props = fragmentScript.props;
+    /** {Function} Функция вызываемая при создании экземпляра компонента */
+    component.created = fragmentScript.created;
+    /** {Function} Функция вызываемая при мантировании компонента */
+    component.mounted = fragmentScript.mounted;
+    /** {Object} Методы компонента */
+    component.methods = fragmentScript.methods;
 
     addStyles(fragmentStyle);
-
-    __fast__.components[componentName] = component;
 
     return component;
   }

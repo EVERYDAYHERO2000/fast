@@ -2,9 +2,9 @@
   "name": "fast",
   "version": "1.0.0",
   "description": "fast html/css/js templates for designers",
-  "main": "index.js",
+  "main": "build.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/EVERYDAYHERO2000/fast/issues"
   },
-  "homepage": "https://github.com/EVERYDAYHERO2000/fast#readme"
+  "homepage": "https://github.com/EVERYDAYHERO2000/fast#readme",
+  "devDependencies": {
+    "fs-extra": "^9.1.0",
+    "uglify-js": "^3.13.0"
+  }
 }

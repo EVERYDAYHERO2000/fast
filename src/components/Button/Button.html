@@ -12,13 +12,8 @@
                 type: 'Number'
             }
         },
-        mount: function(){
-            console.log(this)
-        },
-        events: {
-            click: function(e) {
-                console.log(e.target)
-            }
+        mounted: function(e){
+            console.log('from component',this)
         }
     })
 </script>
