@@ -190,6 +190,7 @@
     }
     
     elem.parentElement.replaceChild(newElem, elem);
+    __fast__.components[componentName].instances.push(newElem);
     newElem.__mounted(newElem);
 
     return elem;
@@ -203,6 +204,7 @@
    */
   function сhildToSlot(childs, slot) {
     const fragment = document.createDocumentFragment();
+    
 
     findComponents(childs);
 
@@ -322,6 +324,8 @@
     component.mounted = fragmentScript.mounted;
     /** {Object} Методы компонента */
     component.methods = fragmentScript.methods;
+    /** {array} экземпляры */
+    component.instances = [];
 
     addStyles(fragmentStyle);
 
