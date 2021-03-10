@@ -96,13 +96,13 @@
 Этот простой пример отрендерится в:
 
 ```
-    <div class="wrapper">
-        <div class="card">
-            <div class="card__inner">
-                <div class="title">Заголовок карточки</div>
-                <button class="button">Кнопка</button>
-            </div>
-        </div>    
-    </div>
+<div class="wrapper">
+    <div class="card">
+        <div class="card__inner">
+            <div class="title">Заголовок карточки</div>
+            <button class="button">Кнопка</button>
+        </div>
+    </div>    
+</div>
 ```
 Стили всех компонентов соберутся в одном месте и будут созданы обработчики событий. 
