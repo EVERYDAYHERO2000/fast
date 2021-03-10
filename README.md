@@ -4,10 +4,12 @@
 + Шаблоны компонентов как в vue.js. html/js/css в одном файле компонента.
 + Никакого jsx.
 + Методы и события для компонентов.
-+ минимум настроек, не нужно ничего никуда импортить.
++ Минимум настроек, не нужно ничего никуда импортить.
 + 0 зависимостей
 
 ## Быстрый старт
+Понадобится любимый браузер и редактор для кода (например vscode с плагином для live preview).
+
 В `index.html` Подклюение fast.js в конце body и инициируем его`__fast__.init({options},[NodeList])`.
 
 ##### index.html
@@ -21,7 +23,7 @@
         </card:>
     </div>
 
-    <script src="fast.min.js"></script>
+    <script src="https://raw.githubusercontent.com/EVERYDAYHERO2000/fast/main/dist/fast.min.js"></script>
     <script>
         __fast__.init();
     </script>
