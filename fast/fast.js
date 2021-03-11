@@ -23,8 +23,9 @@
    * Инициализация `__fast__`.
    * @param {Object} config - конфиг
    * @param {NodeList} entryElems - набор узлов документа
+   * @param {Function} callback - колбек
    */
-  function init(config, entryElems) {
+  function init(config, entryElems, callback) {
     entryElems = entryElems || document.body.querySelectorAll('*');  
     __fast__.config = { ...__fast__.config, ...config };
     addStyles(__fast__.config.css);
@@ -32,7 +33,11 @@
       result.forEach(function (r) {
         installComponent(r.context, r.name);
       });
-      findComponents(entryElems);
+      findComponents(entryElems, function(f){
+
+        if (callback) callback(f)
+
+      });
     });
   }
 
@@ -40,8 +45,9 @@
    * Проверить все элементы в коллекции.
    *
    * @param {NodeList} elems - набор узлов для проверки
+   * @param {Function} callback - колбек
    */
-  function findComponents(elems) {
+  function findComponents(elems, callback) {
     /** компоненты которые необходимо установить */
     const needToInstall = [];
     /** элементы которые нужно отрендерить */
@@ -76,12 +82,15 @@
         needToRender.forEach(function (e) {
           if (e.elem.parentElement) renderComponent(e.elem, e.componentName);
         });
+        if (callback) callback(__fast__)
       });
     } else {
       needToRender.forEach(function (e) {
         renderComponent(e.elem, e.componentName);
       });
+      if (callback) callback(__fast__)
     }
+
   }
 
   /**
@@ -210,7 +219,7 @@
 
     for (let child of childs) {
       const clonedChild = child.cloneNode(true);
-      fragment.appendChild(clonedChild);
+      fragment.append(clonedChild);
     }
 
     slot.parentElement.replaceChild(fragment, slot);
