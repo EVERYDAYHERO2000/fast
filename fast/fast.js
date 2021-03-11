@@ -8,7 +8,7 @@
       /** Директория с компонентами */
       componentsDirectory: "src/components",
       /** Расширение файлов компонента */
-      componentExtension: "html",
+      componentsExtension: "html",
       /** Предзагрузка компонентов */
       components: [],
       /** Глобальные css правила */
@@ -240,7 +240,7 @@
     components.forEach(function (componentName, i) {
       list.push(
         fetch(
-          `${__fast__.config.componentsDirectory}/${componentName}/${componentName}.${__fast__.config.componentExtension}`
+          `${__fast__.config.componentsDirectory}/${componentName}/${componentName}.${__fast__.config.componentsExtension}`
         )
           .then(function (response) {
             //results[i] = response.text();
