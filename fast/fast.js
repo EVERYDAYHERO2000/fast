@@ -303,20 +303,26 @@
             )
         : "";
 
-      const template = (function (props, fragmentTemplate) {
-        let propsKeys = [];
-        let html = fragmentTemplate.children[0].outerHTML;
-        for (let p in props) {
-          propsKeys.push(p);
-        }
+      const template = (function (props, methods, fragmentTemplate) {
+        /** Строчный шаблон компонента */  
+        const html = fragmentTemplate.children[0].outerHTML;
 
-        let vars = "";
-        for (let v in propsKeys) {
-          vars += `const ${propsKeys[v]} = (props.${propsKeys[v]} && props.${propsKeys[v]}.value) ? props.${propsKeys[v]}.value : 'undefined';\n`;
-        }
+        /** Интерполяция методов компонента */
+        const fns = (function(methods){
+            return Object.keys(methods).map(function(f){
+                return `const ${f} = '${f}';\n`;
+            }).join('');
+        })(methods);
 
-        return new Function("props", `${vars} return \`${html}\``);
-      })(fragmentScript.props, fragmentTemplate);
+        /** Пропсы компонента */
+        const vars = (function(props){
+            return Object.keys(props).map(function(v) {
+                return `const ${v} = (props.${v} && props.${v}.value) ? props.${v}.value : 'undefined';\n`;
+            }).join('');
+        })(props);
+
+        return new Function("props", `${vars}${fns} return \`${html}\``);
+      })(fragmentScript.props, fragmentScript.methods, fragmentTemplate);
 
       if (!__fast__.components[componentName])
         __fast__.components[componentName] = {};
