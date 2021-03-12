@@ -42,7 +42,7 @@
   /**
    * Проверить все элементы в коллекции.
    *
-   * @param {NodeList} elems - набор узлов для проверки
+   * @param {NodeList} elems - набор узлов (или узел) для проверки
    * @param {Function} callback - колбек
    */
   function findComponents(elems, callback) {
@@ -50,6 +50,8 @@
     const needToInstall = [];
     /** элементы которые нужно отрендерить */
     const needToRender = [];
+
+    elems = (elems.constructor.name != 'NodeList') ? elems.querySelectorAll('*') : elems;
 
     elems.forEach(function (elem) {
       const tagName = elem.tagName;
@@ -285,8 +287,8 @@
 
         const result = {
           props: {},
-          created: (e) => false,
-          mounted: (e) => false,
+          created: function(e){return e},
+          mounted: function(e){return e},
           methods: {},
           ...new Function(`return ${raw}`)(),
         };
@@ -304,6 +306,7 @@
         : "";
 
       const template = (function (props, methods, fragmentTemplate) {
+
         /** Строчный шаблон компонента */  
         const html = fragmentTemplate.children[0].outerHTML;
 
