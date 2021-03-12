@@ -5,11 +5,8 @@
         </div>
         <div class="sidebar__body">
           <div class="company">
-            <div class="company__plate">
-              <div class="company__logo"></div>
-              <div class="company__header">
-                <div class="company__name">Hair Facker</div>
-              </div>
+            <div class="top-tool">
+              <Company-plate:></Company-plate:>
               <div class="company__tools">
                 <div class="icon-button icon-button_dots">
                   <div class="icon icon_dots"></div>
@@ -289,18 +286,8 @@
   .company {
   }
 
-  .company__plate {
-    padding: 16px 16px 8px 16px;
+  .top-tool {
     position: relative;
-  }
-
-  .company__logo {
-    width: 64px;
-    height: 64px;
-    border-radius: 8px;
-    background-image: url(@component/logo.png);
-    background-size: cover;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
   }
 
   .company__tools {
@@ -310,15 +297,7 @@
     padding: 16px 16px 0 0;
   }
 
-  .company__header {
-    padding: 16px 0 0;
-  }
 
-  .company__name {
-    font-size: 16px;
-    font-weight: 500;
-    color: #fff;
-  }
 
   .navigation {
     padding: 24px 0 0 0;

@@ -1,0 +1,38 @@
+<template>
+    <div class="company-plate">
+        <div class="company-plate__logo"></div>
+        <div class="company-plate__header">
+            <div class="company-plate__name">Hair Facker</div>
+        </div>
+    </div>          
+</template>
+
+<script>
+    ({})
+</script>
+
+<style>
+    .company-plate {
+    padding: 16px 16px 8px 16px;
+    position: relative;
+  }
+
+  .company-plate__logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    background-image: url(@component/logo.png);
+    background-size: cover;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+  }
+
+  .company-plate__header {
+    padding: 16px 0 0;
+  }
+
+  .company-plate__name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+  }
+</style>
