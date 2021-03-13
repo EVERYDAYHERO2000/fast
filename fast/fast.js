@@ -17,23 +17,43 @@
     findComponents: findComponents,
     init: init,
     installComponent: installComponent,
+    parseTemplate: parseTemplate
   });
+
+  /**
+   * Класс компонента
+   */
+  class Component {
+    constructor(fn) {
+        this.props = (fn) ? fn.props : {};
+        this.methods = (fn) ? fn.methods : {};
+        this.name = (fn) ? fn.name : '';
+
+        if (fn && fn.mounted) this.mounted = fn.mounted;
+        if (fn && fn.created) this.created = fn.created;
+
+        return this
+    }
+    mounted(e) {return e}
+    created(e) {return e}
+  }
+
 
   /**
    * Инициализация `__fast__`.
    * @param {Object} config - конфиг
-   * @param {NodeList} entryElems - набор узлов документа
+   * @param {NodeList} $entryElems - набор узлов документа
    * @param {Function} callback - колбек
    */
-  function init(config, entryElems, callback) {
-    entryElems = entryElems || document.body.querySelectorAll("*");
+  function init(config, $entryElems, callback) {
+    $entryElems = $entryElems || document.body.querySelectorAll("*");
     __fast__.config = { ...__fast__.config, ...config };
     addStyles(__fast__.config.css);
     loadComponents(__fast__.config.components, function (result) {
       result.forEach(function (r) {
         installComponent(r.context, r.name);
       });
-      findComponents(entryElems, function (f) {
+      findComponents($entryElems, function (f) {
         if (callback) callback(f);
       });
     });
@@ -42,19 +62,22 @@
   /**
    * Проверить все элементы в коллекции.
    *
-   * @param {NodeList} elems - набор узлов (или узел) для проверки
+   * @param {NodeList} $elems - набор узлов (или узел) для проверки
    * @param {Function} callback - колбек
    */
-  function findComponents(elems, callback) {
+  function findComponents($elems, callback) {
     /** компоненты которые необходимо установить */
     const needToInstall = [];
     /** элементы которые нужно отрендерить */
     const needToRender = [];
 
-    elems = (elems.constructor.name != 'NodeList') ? elems.querySelectorAll('*') : elems;
+    $elems =
+      $elems.constructor.name != "NodeList"
+        ? $elems.querySelectorAll("*")
+        : $elems;
 
-    elems.forEach(function (elem) {
-      const tagName = elem.tagName;
+    $elems.forEach(function ($elem) {
+      const tagName = $elem.tagName;
 
       if (tagName && tagName.includes(__fast__.config.tagSign)) {
         const componentName =
@@ -62,13 +85,13 @@
 
         if (!__fast__.components[componentName]) {
           needToInstall.push(componentName);
-          __fast__.components[componentName] = {};
+          __fast__.components[componentName] = new Component();
         }
 
         needToRender.push({
           componentName: componentName,
           component: __fast__.components[componentName],
-          elem: elem,
+          $elem: $elem,
         });
       }
     });
@@ -80,13 +103,13 @@
         });
 
         needToRender.forEach(function (e) {
-          if (e.elem.parentElement) renderComponent(e.elem, e.componentName);
+          if (e.$elem.parentElement) renderComponent(e.$elem, e.componentName);
         });
         if (callback) callback(__fast__);
       });
     } else {
       needToRender.forEach(function (e) {
-        renderComponent(e.elem, e.componentName);
+        renderComponent(e.$elem, e.componentName);
       });
       if (callback) callback(__fast__);
     }
@@ -95,20 +118,20 @@
   /**
    * Отрендерить и заменить узел на компонент.
    *
-   * @param {Element} elem - узел для замены
+   * @param {Element} $elem - узел для замены
    * @param {String} componentName - название компонента
    */
-  function renderComponent(elem, componentName) {
+  function renderComponent($elem, componentName) {
     try {
-      const entryChilds = elem.childNodes;
-      const entrySlots = elem.querySelectorAll("slot");
-      const entryAttributes = ((elem) => {
+      const entryChilds = $elem.childNodes;
+      const entrySlots = $elem.querySelectorAll("slot");
+      const entryAttributes = (($elem) => {
         const result = {};
-        for (let a of elem.attributes) {
+        for (let a of $elem.attributes) {
           result[a.nodeName] = a.nodeValue;
         }
         return result;
-      })(elem);
+      })($elem);
 
       const component = __fast__.components[componentName];
       const props = JSON.parse(JSON.stringify(component.props));
@@ -126,57 +149,55 @@
         if (!match) simpleAttributes[attr] = entryAttributes[attr];
       }
 
-      const newElem = (function (props) {
+      const $componentInstance = (function (props) {
         const parser = new DOMParser();
 
-        const template = parser.parseFromString(
+        const $template = parser.parseFromString(
           component.template(props),
           "text/html"
         ).body;
-        const elems = template.querySelectorAll("*");
+        const $elems = $template.querySelectorAll("*");
 
-        elems.forEach(function (e) {
-          for (let a of e.attributes) {
-            if (a.name.includes(":")) {
-              const eventProp = {
-                name: a.name.replace(":", ""),
-                value: `__${a.nodeValue}`,
-              };
+        $elems.forEach(function ($element) {
+          for (let attr of $element.attributes) {
+            if (attr.name.includes(":")) {
+              const eventName = attr.name.replace("on:", "");
+              const eventFunctionName = attr.nodeValue;  
 
-              e[eventProp.value] = component.methods[a.nodeValue];
-              e.removeAttribute(a.name);
-              e.addEventListener(
-                eventProp.name.slice(2),
-                component.methods[a.nodeValue]
+              $element[`__${eventFunctionName}`] = component.methods[eventFunctionName];
+              $element.removeAttribute(attr.name);
+              $element.addEventListener(
+                eventName,
+                component.methods[eventFunctionName]
               );
             }
           }
         });
 
-        const newElement = template.children[0];
+        const $instance = $template.children[0];
 
-        newElement.__created = component.created;
-        newElement.__mounted = component.mounted;
+        $instance.__created = component.created;
+        $instance.__mounted = component.mounted;
 
-        return newElement;
+        return $instance;
       })(props);
 
-      findComponents(newElem.querySelectorAll("*"));
-      newElem.__created(newElem);
+      findComponents($componentInstance.querySelectorAll("*"));
+      $componentInstance.__created($componentInstance);
 
       //установить простые атрибуты для узла
       for (let attr in simpleAttributes) {
-        if (newElem.hasAttribute(attr)) {
-          newElem.setAttribute(
+        if ($componentInstance.hasAttribute(attr)) {
+            $componentInstance.setAttribute(
             attr,
-            `${newElem.getAttribute(attr)} ${simpleAttributes[attr]}`
+            `${$componentInstance.getAttribute(attr)} ${simpleAttributes[attr]}`
           );
         } else {
-          newElem.setAttribute(attr, simpleAttributes[attr]);
+            $componentInstance.setAttribute(attr, simpleAttributes[attr]);
         }
       }
 
-      const newElemSlots = newElem.querySelectorAll("slot");
+      const newElemSlots = $componentInstance.querySelectorAll("slot");
 
       //перенести дочернии узлы в слоты
       if (entryChilds.length && newElemSlots.length) {
@@ -198,11 +219,11 @@
         }
       }
 
-      elem.parentElement.replaceChild(newElem, elem);
-      __fast__.components[componentName].instances.push(newElem);
-      newElem.__mounted(newElem);
+      $elem.parentElement.replaceChild($componentInstance, $elem);
+      __fast__.components[componentName].instances.push($componentInstance);
+      $componentInstance.__mounted($componentInstance);
 
-      return elem;
+      return $elem;
     } catch (err) {
       console.error(`Component <${componentName}> can't be rendered.`);
     }
@@ -262,6 +283,58 @@
   }
 
   /**
+   * Разбирает строку компонента и возвращает 3 объекта (шаблон, скрипт, стили).
+   * 
+   * @param {String} context - строчное представление файла компонента
+   * @param {String} componentName - имя компонента
+   */
+  function parseTemplate(context, componentName) {
+    const parser = new DOMParser();
+    const fragment = parser.parseFromString(context, "text/html");
+    const fragmentTemplate = fragment.querySelector("template").content;
+    const fragmentScript = (function () {
+      const raw = (function () {
+        let trimed = fragment.querySelector("script")
+          ? fragment.querySelector("script").innerText.trim()
+          : "({})";
+        trimed =
+          trimed[trimed.length - 1] == ";"
+            ? trimed.slice(0, trimed.length - 1)
+            : trimed;
+        trimed = trimed.slice(1, trimed.length - 1);
+        return trimed;
+      })();
+
+      const result = {
+        props: {},
+        created: function(e){return e},
+        mounted: function(e){return e},
+        methods: {},
+        ...new Function(`return ${raw}`)(),
+      };
+
+      
+
+      return result;
+    })();
+
+    const fragmentStyle = fragment.querySelector("style")
+      ? fragment
+          .querySelector("style")
+          .textContent.replaceAll(
+            "@component",
+            `${__fast__.config.componentsDirectory}/${componentName}/assets`
+          )
+      : "";
+
+    return {
+      fragmentTemplate: fragmentTemplate,
+      fragmentScript: fragmentScript,
+      fragmentStyle: fragmentStyle,
+    };
+  }
+
+  /**
    * Инсталировать компонент в `__fast__.components[componentName]`.
    *
    * @param {String} context - строка, содержимое файла компонента
@@ -269,59 +342,31 @@
    */
   function installComponent(context, componentName) {
     try {
-      const parser = new DOMParser();
-      const fragment = parser.parseFromString(context, "text/html");
-      const fragmentTemplate = fragment.querySelector("template").content;
-      const fragmentScript = (function () {
-        const raw = (function () {
-          let trimed = fragment.querySelector("script")
-            ? fragment.querySelector("script").innerText.trim()
-            : "({})";
-          trimed =
-            trimed[trimed.length - 1] == ";"
-              ? trimed.slice(0, trimed.length - 1)
-              : trimed;
-          trimed = trimed.slice(1, trimed.length - 1);
-          return trimed;
-        })();
-
-        const result = {
-          props: {},
-          created: function(e){return e},
-          mounted: function(e){return e},
-          methods: {},
-          ...new Function(`return ${raw}`)(),
-        };
-
-        return result;
-      })();
-
-      const fragmentStyle = fragment.querySelector("style")
-        ? fragment
-            .querySelector("style")
-            .textContent.replaceAll(
-              "@component",
-              `${__fast__.config.componentsDirectory}/${componentName}/assets`
-            )
-        : "";
+      const { fragmentTemplate, fragmentScript, fragmentStyle } = parseTemplate(
+        context,
+        componentName
+      );
 
       const template = (function (props, methods, fragmentTemplate) {
-
-        /** Строчный шаблон компонента */  
+        /** Строчный шаблон компонента */
         const html = fragmentTemplate.children[0].outerHTML;
 
         /** Интерполяция методов компонента */
-        const fns = (function(methods){
-            return Object.keys(methods).map(function(f){
-                return `const ${f} = '${f}';\n`;
-            }).join('');
+        const fns = (function (methods) {
+          return Object.keys(methods)
+            .map(function (f) {
+              return `const ${f} = '${f}';\n`;
+            })
+            .join("");
         })(methods);
 
         /** Пропсы компонента */
-        const vars = (function(props){
-            return Object.keys(props).map(function(v) {
-                return `const ${v} = (props.${v} && props.${v}.value) ? props.${v}.value : 'undefined';\n`;
-            }).join('');
+        const vars = (function (props) {
+          return Object.keys(props)
+            .map(function (v) {
+              return `const ${v} = (props.${v} && props.${v}.value) ? props.${v}.value : 'undefined';\n`;
+            })
+            .join("");
         })(props);
 
         return new Function("props", `${vars}${fns} return \`${html}\``);
