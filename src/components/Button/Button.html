@@ -1,6 +1,6 @@
 <template>
     <button onclick="${onClick}" class="button ${setType(type)}">
-        ${text}
+        <span>${text}</span>
     </button>
 </template>
 
@@ -41,13 +41,37 @@
        font-family: sans-serif;
        background-color: transparent;
        border-radius: 4px;
+       padding: 8px;
+       cursor: pointer;
+
+       &:focus {
+           outline: none;
+           box-shadow: 0 0 0 3px rgba(0,155,255,0.3)
+       }
+
+       .page_theme_light &:hover {
+          background-color: rgba(0,0,0,0.05);
+       }
+
+       .page_theme_dark &:hover {
+          background-color: rgba(255,255,255,0.1);
+       }
+
+       .page_theme_light & {
+           color: #000;
+       }
+
+       .page_theme_dark & {
+           color: #fff;
+       }
 
        .page_theme_light &_type_tool {
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.2);
        }
 
        .page_theme_dark &_type_tool {
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
        } 
    }
+
 </style>

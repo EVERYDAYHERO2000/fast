@@ -23,7 +23,10 @@
         },
         methods: {
             setTheme: function(theme){
-                return (theme == 'white') ? 'page_theme_light' : 'page_theme_dark'
+                return (theme == 'light') ? 'page_theme_light' : 'page_theme_dark'
+            },
+            changeTheme: function(e){
+                console.log(e)
             }
         }
     })
@@ -34,6 +37,11 @@
        font-family: sans-serif;
        font-size: 16px;
        min-height: 100vh;
+
+       a {
+           color: #4080C6;
+           text-decoration: none;
+       }
 
        &_theme {
             &_light {

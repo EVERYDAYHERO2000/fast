@@ -1,0 +1,42 @@
+<template>
+    <div class="icon"></div>
+</template>
+
+<script>
+    ({
+        props: {
+            name: {
+                type: String
+            }
+        },
+        created: function(e){
+            fetch(`${e.component.path}assets/${e.props.name.value}.svg`)
+            .then(function (response) {
+                return response.text();
+            })
+            .then(function (context) {
+                e.instance.innerHTML = context;
+            });
+        }
+    })
+</script>
+
+<style type="text/scss">
+    .icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .page_theme_light .icon svg {
+        path {
+            fill: #000;
+        }
+    }
+
+    .page_theme_dark .icon svg {
+        path {
+            fill: #fff;
+        }
+    }
+
+</style>

@@ -149,6 +149,7 @@
         if (!match) simpleAttributes[attr] = entryAttributes[attr];
       }
 
+      /** Создание компонента из шаблона по пропсам */
       const $componentInstance = (function (props) {
         const parser = new DOMParser();
 
@@ -158,6 +159,7 @@
         ).body;
         const $elems = $template.querySelectorAll("*");
 
+        /** Создание обработчиков событий */
         $elems.forEach(function ($element) {
           for (let attr of $element.attributes) {
             if (attr.name.indexOf('on') + 1 == 1) {
@@ -174,6 +176,7 @@
           }
         });
 
+        /** Экземпляр компонента */
         const $instance = $template.children[0];
 
         $instance.__created = component.created;
@@ -183,7 +186,11 @@
       })(props);
 
       findComponents($componentInstance.querySelectorAll("*"));
-      $componentInstance.__created($componentInstance);
+      $componentInstance.__created({
+        component: __fast__.components[componentName],
+        instance: $componentInstance,
+        props: props
+      });
 
       //установить простые атрибуты для узла
       for (let attr in simpleAttributes) {
@@ -221,7 +228,11 @@
 
       $elem.parentElement.replaceChild($componentInstance, $elem);
       __fast__.components[componentName].instances.push($componentInstance);
-      $componentInstance.__mounted($componentInstance);
+      $componentInstance.__mounted({
+        component: __fast__.components[componentName],
+        instance: $componentInstance,
+        props: props
+      });
 
       return $elem;
     /*  
@@ -415,6 +426,8 @@
       component.methods = fragmentScript.methods;
       /** {array} экземпляры */
       component.instances = [];
+      /** {String} путь к компоненту */
+      component.path = `${__fast__.config.componentsDirectory}/${componentName}/`
 
       addStyles(fragmentStyle);
 

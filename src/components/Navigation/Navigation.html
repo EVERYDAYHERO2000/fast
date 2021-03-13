@@ -1,6 +1,9 @@
 <template>
     <div class="navigation">
-        <div class="navigation__address">${address}</div>
+        <div class="navigation__address">
+            <Icon: name="pin"></Icon:>
+            <span>${address} <a href="https://maps.ya.ru/">Построить маршрут</a></span>
+        </div>
         <div class="navigation__phone">
             <Button: text="${setPhone(phone)}" type="tool"></Button:>
         </div>
@@ -29,5 +32,16 @@
 <style type="text/scss">
    .navigation {
        height: 64px;
+       display:flex;
+       padding: 0px 16px;
+       justify-content: space-between;
+       align-items: center;
+       box-sizing: border-box;
+       font-size: 14px;
+
+       &__address {
+           display: flex;
+           align-items: center;
+       }
    }
 </style>
