@@ -1,31 +1,53 @@
 <template>
-    <div class="button">${text}</div>
+    <button onclick="${onClick}" class="button ${setType(type)}">
+        ${text}
+    </button>
 </template>
 
 <script>
     ({
         props: {
             text: {
-                type: 'String'
+                type: String
             },
-            test: {
-                type: 'Number'
+            type: {
+                type: String
             }
         },
-        mounted: function(e){
-            console.log('from component',this)
+        methods: {
+            onClick: function(e){
+                console.log(e)
+            },
+            setType: function(type){
+                let t = ''
+
+                switch (type) {
+                    case 'tool':
+                        t = 'button_type_tool'
+                        break; 
+                }
+
+                return t;
+            }
         }
+
     })
 </script>
 
-<style>
-    .button {
-        border-radius: 8px;
-        padding: 8px 16px;
-        color: #fff;
-        background-color: blue;
-        font-family: sans-serif;
-        appearance: button;
-        box-sizing: border-box;
-    }
+<style type="text/scss">
+   .button {
+       border: none;
+       appearance: none;
+       font-family: sans-serif;
+       background-color: transparent;
+       border-radius: 4px;
+
+       .page_theme_light &_type_tool {
+            border: 1px solid rgba(0,0,0,0.1);
+       }
+
+       .page_theme_dark &_type_tool {
+            border: 1px solid rgba(255,255,255,0.1);
+       } 
+   }
 </style>

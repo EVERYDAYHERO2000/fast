@@ -122,7 +122,7 @@
    * @param {String} componentName - название компонента
    */
   function renderComponent($elem, componentName) {
-    try {
+    //try {
       const entryChilds = $elem.childNodes;
       const entrySlots = $elem.querySelectorAll("slot");
       const entryAttributes = (($elem) => {
@@ -160,16 +160,16 @@
 
         $elems.forEach(function ($element) {
           for (let attr of $element.attributes) {
-            if (attr.name.includes(":")) {
-              const eventName = attr.name.replace("on:", "");
-              const eventFunctionName = attr.nodeValue;  
+            if (attr.name.indexOf('on') + 1 == 1) {
+              const attrName = attr.name;
+              const eventType = attrName.slice(2);
+              const attrValue = attr.nodeValue;
+              const eventFunctionName = `__${attrValue}`; 
 
-              $element[`__${eventFunctionName}`] = component.methods[eventFunctionName];
-              $element.removeAttribute(attr.name);
-              $element.addEventListener(
-                eventName,
-                component.methods[eventFunctionName]
-              );
+              $element[eventFunctionName] = component.methods[attrValue];
+              $element.addEventListener(eventType, $element[eventFunctionName]);
+              $element.removeAttribute(attrName);
+
             }
           }
         });
@@ -224,9 +224,11 @@
       $componentInstance.__mounted($componentInstance);
 
       return $elem;
+    /*  
     } catch (err) {
       console.error(`Component <${componentName}> can't be rendered.`);
     }
+    */
   }
 
   /**
@@ -318,7 +320,8 @@
       return result;
     })();
 
-    const fragmentStyle = fragment.querySelector("style")
+    const fragmentStyle = (function(fragment){
+      let style = fragment.querySelector("style")
       ? fragment
           .querySelector("style")
           .textContent.replaceAll(
@@ -326,6 +329,10 @@
             `${__fast__.config.componentsDirectory}/${componentName}/assets`
           )
       : "";
+
+      return style;
+
+    })(fragment)  
 
     return {
       fragmentTemplate: fragmentTemplate,
@@ -341,7 +348,7 @@
    * @param {String} componentName - название компонента
    */
   function installComponent(context, componentName) {
-    try {
+    //try {
       const { fragmentTemplate, fragmentScript, fragmentStyle } = parseTemplate(
         context,
         componentName
@@ -349,16 +356,31 @@
 
       const template = (function (props, methods, fragmentTemplate) {
         /** Строчный шаблон компонента */
-        const html = fragmentTemplate.children[0].outerHTML;
+        const html = (function(fragmentTemplate){
+          let tpl = fragmentTemplate.children[0].outerHTML || '';
+
+          /** 
+           * Интерполяция названий методов в инлайновых обработчиках событий
+           * пример on:click="${onClick}" => on:click="onClick"
+           * методы событий крепятся к экземпляру компонента на этапе создания экземпляра 
+           * */
+          tpl = tpl.replace(/on([a-z]+)=['"]?\$\{([\w\d_]+)\}['"]?/gi, function(e,a,b){
+            return `on${a}="${b}"`
+          });
+
+          return tpl;
+        })(fragmentTemplate);  
 
         /** Интерполяция методов компонента */
         const fns = (function (methods) {
           return Object.keys(methods)
             .map(function (f) {
-              return `const ${f} = '${f}';\n`;
+              return `const ${f} = ${methods[f]};\n`;
             })
             .join("");
         })(methods);
+
+        
 
         /** Пропсы компонента */
         const vars = (function (props) {
@@ -397,11 +419,11 @@
       addStyles(fragmentStyle);
 
       return component;
+    /*  
     } catch (err) {
-      console.error(
-        `Component <${componentName}> not found and can't be installed. Check component file directory.`
-      );
+      console.error(`Component <${componentName}> not found and can't be installed. Check component file directory.`);
     }
+    */
   }
 
   /**
@@ -417,7 +439,13 @@
       document.head.append(fastStyles);
     }
 
-    fastStyles.textContent += `${cssRules}\n`;
+    if (Sass) {
+      Sass.compile(cssRules, function(result){
+        fastStyles.textContent += `${result.text}\n`;
+      })
+    } else {
+      fastStyles.textContent += `${cssRules}\n`;
+    }
 
     return fastStyles.textContent;
   }

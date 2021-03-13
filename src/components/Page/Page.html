@@ -1,0 +1,58 @@
+<template>
+    <div class="page ${setTheme(theme)}">
+        <Navigation: 
+            address="Санкт-Петербург, Морская ул., 7"
+            phone="+7 926-848-00-40"
+        ></Navigation:>
+        <div class="page__inner">
+            <div class="page__content">    
+                <slot name="main"> 
+
+                </slot>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    ({
+        props: {
+            theme: {
+                type: String
+            }
+        },
+        methods: {
+            setTheme: function(theme){
+                return (theme == 'white') ? 'page_theme_light' : 'page_theme_dark'
+            }
+        }
+    })
+</script>
+
+<style type="text/scss">
+   .page {
+       font-family: sans-serif;
+       font-size: 16px;
+       min-height: 100vh;
+
+       &_theme {
+            &_light {
+                background-color: #fff;
+                color: #000; 
+            }
+            &_dark {
+                background-color: #000;
+                color: #fff;   
+            }
+       }
+   } 
+
+   .page__inner {
+        display:flex;
+        justify-content: center;
+   }
+   .page__content {
+        width: 100%;
+        max-width: 1100px;
+   }
+</style>

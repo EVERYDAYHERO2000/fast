@@ -3,6 +3,7 @@
 
 + Шаблоны компонентов как в vue.js. html/js/css в одном файле компонента.
 + Никакого jsx.
++ sass для css
 + Методы и события для компонентов.
 + Минимум настроек, не нужно ничего никуда импортить.
 + 0 зависимостей
@@ -37,7 +38,7 @@
 ##### src/components/Button/Button.html
 ```
 <template>
-    <button class="button" on:click="message" >${text}</button>
+    <button class="button" onclick="${message}" >${text}</button>
 <template>
 
 <script>

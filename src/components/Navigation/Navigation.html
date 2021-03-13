@@ -1,0 +1,33 @@
+<template>
+    <div class="navigation">
+        <div class="navigation__address">${address}</div>
+        <div class="navigation__phone">
+            <Button: text="${setPhone(phone)}" type="tool"></Button:>
+        </div>
+        <div class="navigation__tools"></div>
+    </div>
+</template>
+
+<script>
+    ({
+        props: {
+            address: {
+                type: String
+            },
+            phone: {
+                type: String
+            }
+        },
+        methods: {
+            setPhone: function(phone){
+                return phone
+            }
+        }
+    })
+</script>
+
+<style type="text/scss">
+   .navigation {
+       height: 64px;
+   }
+</style>
