@@ -28,7 +28,10 @@
                 switch (type) {
                     case 'tool':
                         t = 'button_type_tool'
-                        break; 
+                        break;
+                    case 'gdu':
+                        t = 'button_type_gdu'
+                        break;     
                 }
 
                 return t;
@@ -55,10 +58,17 @@
        cursor: pointer;
        display: flex;
        align-items: center;
+       display: flex;
 
        &_size {
            &_s {
                height: 40px;
+           }
+
+           &_m {
+               height: 56px;
+               padding: 0 24px;
+               font-size: 16px;
            }
        }
 
@@ -76,13 +86,7 @@
            margin-left: 8px;
        }
 
-       .page_theme_light &:hover {
-          background-color: rgba(0,0,0,0.05);
-       }
 
-       .page_theme_dark &:hover {
-          background-color: rgba(255,255,255,0.1);
-       }
 
        .page_theme_light & {
            color: #000;
@@ -94,11 +98,28 @@
 
        .page_theme_light &_type_tool {
             border: 1px solid rgba(0,0,0,0.1);
+
+            &:hover {
+                background-color: rgba(0,0,0,0.05);
+            }
        }
 
        .page_theme_dark &_type_tool {
             border: 1px solid rgba(255,255,255,0.2);
+
+            &:hover {
+                background-color: rgba(255,255,255,0.1);
+            }
        } 
+
+       &_type_gdu {
+           background-color: #FFD353;
+           width:fit-content;
+
+           &:hover {
+                background-color: #FFC51F;
+           }
+       }
    }
 
 </style>

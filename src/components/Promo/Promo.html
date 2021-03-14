@@ -4,6 +4,7 @@
             <Company-logo:>123</Company-logo:>
             <h1>${title}</h1>
             <div>${description}</div>
+            <Button: text="Записаться онлайн" type="gdu" size="m"></Button:>
         </div>
         <div class="promo__cover">
             <div class="promo__image"></div>
@@ -28,6 +29,35 @@
 <style>
    .promo {
        display: flex;
+       justify-content: space-between;
+       margin: 64px 0 0 0;
+       padding: 64px 0 0 0;
+
+       & h1 {
+           font-size: 48px;
+           line-height: 1.3;
+           margin:0;
+       }
        
+        &__description {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        &__cover {
+            width: 50%;
+            display: flex;
+            justify-content: center;
+        }
+
+        &__image {
+            height: 500px;
+            width: 500px;
+            min-height: 500px;
+            min-width: 500px;
+            background-image: url(@component/photo.png);
+        }
    }
 </style>

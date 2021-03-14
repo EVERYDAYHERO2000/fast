@@ -108,13 +108,13 @@
         needToRender.forEach(function (e) {
           if (e.$elem.parentElement) renderComponent(e.$elem, e.componentName);
         });
-        if (callback) callback(__fast__);
+        if (callback) callback(__fast__, $elems);
       });
     } else {
       needToRender.forEach(function (e) {
         renderComponent(e.$elem, e.componentName);
       });
-      if (callback) callback(__fast__);
+      if (callback) callback(__fast__, $elems);
     }
   }
 
@@ -241,6 +241,7 @@
       }
     }
 
+
     $elem.parentElement.replaceChild($componentInstance, $elem);
     __fast__.components[componentName].instances.push($componentInstance);
     $componentInstance.__mounted({
@@ -267,18 +268,21 @@
 
     const fragment = document.createDocumentFragment();
 
-    findComponents(childs, function(){
+    findComponents(childs, function(__fast__, $newElems){
+
+      //console.log($newElems[1].children[0].children[0])
 
       /** починить */
       setTimeout(function(){
-      
-        childs.forEach(function (child) {
-          fragment.append(child.cloneNode(true));
+
+        
+        $newElems.forEach(function (child) {
+          if (child.tagName) fragment.append(child);
         });
     
         slot.parentElement.replaceChild(fragment, slot);
 
-      },100);
+      },500);
 
     });
 
