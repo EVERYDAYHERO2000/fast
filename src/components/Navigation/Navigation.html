@@ -6,12 +6,14 @@
         </div>
         <div>
             <div class="navigation__phone">
-                <Button: text="${setPhone(phone)}" type="tool" icon="phone"></Button:>
+                <Button: text="${setPhone(phone)}" type="tool" icon="phone" size="s"></Button:>
             </div>
             <div class="navigation__tools">
-                <Button: text="Telegram" type="tool" onclick="${onClick}"></Button:>
-                <Button: text="WhatsApp" type="tool"></Button:>
-                <Button: type="tool"></Button:>
+                <Button: text="Telegram" type="tool" icon="telegram" size="s"></Button:>
+                <Button: text="WhatsApp" type="tool" icon="whatsapp" size="s"></Button:>
+                <Button: type="tool" icon="www" size="s"></Button:>
+                <Button: type="tool" icon="instagram" size="s"></Button:>
+                <Button: type="tool" icon="facebook" size="s"></Button:>
             </div>
         </div>
     </div>
@@ -30,9 +32,6 @@
         methods: {
             setPhone: function(phone){
                 return phone
-            },
-            onClick: function(e){
-                console.log(e.target)
             }
         }
     })
@@ -47,6 +46,15 @@
        align-items: center;
        box-sizing: border-box;
        font-size: 14px;
+       min-width: 960px;
+
+       .page_theme_light & {
+          background-color: #fff;  
+       }
+
+       .page_theme_dark & {
+          background-color: #000;   
+       }
 
        & > div {
            display: flex;

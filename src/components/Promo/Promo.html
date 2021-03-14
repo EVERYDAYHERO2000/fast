@@ -1,11 +1,33 @@
 <template>
-    
+    <div class="promo">
+        <div class="promo__description">
+            <Company-logo:>123</Company-logo:>
+            <h1>${title}</h1>
+            <div>${description}</div>
+        </div>
+        <div class="promo__cover">
+            <div class="promo__image"></div>
+        </div>
+    </div>
 </template>
 
 <script>
-    ({})
+    ({
+        props: {
+            title: {
+                type: String
+            },
+            description: {
+                type: String
+            }
+
+        }
+    })
 </script>
 
 <style>
-   
+   .promo {
+       display: flex;
+       
+   }
 </style>

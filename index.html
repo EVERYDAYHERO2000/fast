@@ -6,7 +6,12 @@
     <body>
         
         <Page: theme="light">
-            1
+            <slot name="main">
+                <Promo: 
+                    title="Hair Facker"
+                    description="Салон красоты, парикмахерская"
+                ></Promo:>
+            </slot>
         </Page:>
 
         <script src="fast/sass.sync.min.js"></script>
@@ -15,7 +20,7 @@
             __fast__.init(
                 {
                     components: [],
-                    css: `body {margin:0; padding:0; font-family: sans-serif}`
+                    css: `body {margin:0; padding:0; font-family: sans-serif} `
                 }
             );
         </script>

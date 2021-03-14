@@ -1,7 +1,7 @@
 <template>
-    <button class="button ${setType(type)}">
-        <Icon: style="${setIcon(icon)}" name="${icon}"></Icon:>
-        <span>${text||''}</span>
+    <button class="button ${setType(type)} ${setSize(size)}">
+        ${(icon)?`<Icon: style="${setIcon(icon)}" name="${icon}"></Icon:>`:''}
+        ${(text)?`<span>${text}</span>`:''}
     </button>
 </template>
 
@@ -15,6 +15,9 @@
                 type: String
             },
             icon: {
+                type: String
+            },
+            size: {
                 type: String
             }
         },
@@ -30,8 +33,11 @@
 
                 return t;
             },
-            setIcon: function(icon) {
+            setIcon: function(icon){
                 return (icon == undefined) ? 'display:none' : ''
+            },
+            setSize: function(size){
+                return (size) ? `button_size_${size}` : ''
             }
         }
 
@@ -44,15 +50,30 @@
        appearance: none;
        font-family: sans-serif;
        background-color: transparent;
-       border-radius: 4px;
-       padding: 8px;
+       border-radius: 8px;
+       padding: 0 10px;
        cursor: pointer;
        display: flex;
        align-items: center;
 
+       &_size {
+           &_s {
+               height: 40px;
+           }
+       }
+
        &:focus {
            outline: none;
            box-shadow: 0 0 0 3px rgba(0,155,255,0.3)
+       }
+
+       & .icon {
+          transform: scale(0.8);
+          transform-origin: center;
+       }
+
+       & .icon + span {
+           margin-left: 8px;
        }
 
        .page_theme_light &:hover {
@@ -72,7 +93,7 @@
        }
 
        .page_theme_light &_type_tool {
-            border: 1px solid rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.1);
        }
 
        .page_theme_dark &_type_tool {

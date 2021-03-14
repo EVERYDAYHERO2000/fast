@@ -125,6 +125,8 @@
    * @param {String} componentName - название компонента
    */
   function renderComponent($elem, componentName) {
+
+
     //try {
     const entryChilds = $elem.childNodes;
     const entrySlots = $elem.querySelectorAll("slot");
@@ -194,12 +196,15 @@
       return $instance;
     })(props);
 
+
+
     findComponents($componentInstance.querySelectorAll("*"));
     $componentInstance.__created({
       component: __fast__.components[componentName],
       instance: $componentInstance,
       props: props,
     });
+
 
     //установить простые атрибуты для узла
     for (let attr in simpleAttributes) {
@@ -244,7 +249,7 @@
       props: props,
     });
 
-    return $elem;
+    return $componentInstance;
     /*  
     } catch (err) {
       console.error(`Component <${componentName}> can't be rendered.`);
@@ -259,15 +264,23 @@
    * @param {Element} slot - узел слота `<slot>`
    */
   function сhildToSlot(childs, slot) {
+
     const fragment = document.createDocumentFragment();
 
-    findComponents(childs);
+    findComponents(childs, function(){
 
-    childs.forEach(function (child) {
-      fragment.append(child.cloneNode(true));
+      /** починить */
+      setTimeout(function(){
+      
+        childs.forEach(function (child) {
+          fragment.append(child.cloneNode(true));
+        });
+    
+        slot.parentElement.replaceChild(fragment, slot);
+
+      },100);
+
     });
-
-    slot.parentElement.replaceChild(fragment, slot);
 
     return childs;
   }
@@ -288,7 +301,6 @@
           `${__fast__.config.componentsDirectory}/${componentName}/${componentName}.${__fast__.config.componentsExtension}`
         )
           .then(function (response) {
-            //results[i] = response.text();
             return response.text();
           })
           .then(function (context) {
