@@ -1,6 +1,7 @@
 <template>
-    <button onclick="${onClick}" class="button ${setType(type)}">
-        <span>${text}</span>
+    <button class="button ${setType(type)}">
+        <Icon: style="${setIcon(icon)}" name="${icon}"></Icon:>
+        <span>${text||''}</span>
     </button>
 </template>
 
@@ -12,12 +13,12 @@
             },
             type: {
                 type: String
+            },
+            icon: {
+                type: String
             }
         },
         methods: {
-            onClick: function(e){
-                console.log(e)
-            },
             setType: function(type){
                 let t = ''
 
@@ -28,6 +29,9 @@
                 }
 
                 return t;
+            },
+            setIcon: function(icon) {
+                return (icon == undefined) ? 'display:none' : ''
             }
         }
 
@@ -43,6 +47,8 @@
        border-radius: 4px;
        padding: 8px;
        cursor: pointer;
+       display: flex;
+       align-items: center;
 
        &:focus {
            outline: none;

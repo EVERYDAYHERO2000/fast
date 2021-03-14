@@ -4,10 +4,16 @@
             <Icon: name="pin"></Icon:>
             <span>${address} <a href="https://maps.ya.ru/">Построить маршрут</a></span>
         </div>
-        <div class="navigation__phone">
-            <Button: text="${setPhone(phone)}" type="tool"></Button:>
+        <div>
+            <div class="navigation__phone">
+                <Button: text="${setPhone(phone)}" type="tool" icon="phone"></Button:>
+            </div>
+            <div class="navigation__tools">
+                <Button: text="Telegram" type="tool" onclick="${onClick}"></Button:>
+                <Button: text="WhatsApp" type="tool"></Button:>
+                <Button: type="tool"></Button:>
+            </div>
         </div>
-        <div class="navigation__tools"></div>
     </div>
 </template>
 
@@ -24,6 +30,9 @@
         methods: {
             setPhone: function(phone){
                 return phone
+            },
+            onClick: function(e){
+                console.log(e.target)
             }
         }
     })
@@ -39,9 +48,21 @@
        box-sizing: border-box;
        font-size: 14px;
 
+       & > div {
+           display: flex;
+       } 
+
        &__address {
            display: flex;
            align-items: center;
+       }
+
+       &__tools {
+           display: flex;
+
+           & .button {
+               margin-left: 8px;
+           }
        }
    }
 </style>

@@ -17,7 +17,7 @@
     findComponents: findComponents,
     init: init,
     installComponent: installComponent,
-    parseTemplate: parseTemplate
+    parseTemplate: parseTemplate,
   });
 
   /**
@@ -25,19 +25,22 @@
    */
   class Component {
     constructor(fn) {
-        this.props = (fn) ? fn.props : {};
-        this.methods = (fn) ? fn.methods : {};
-        this.name = (fn) ? fn.name : '';
+      this.props = fn ? fn.props : {};
+      this.methods = fn ? fn.methods : {};
+      this.name = fn ? fn.name : "";
 
-        if (fn && fn.mounted) this.mounted = fn.mounted;
-        if (fn && fn.created) this.created = fn.created;
+      if (fn && fn.mounted) this.mounted = fn.mounted;
+      if (fn && fn.created) this.created = fn.created;
 
-        return this
+      return this;
     }
-    mounted(e) {return e}
-    created(e) {return e}
+    mounted(e) {
+      return e;
+    }
+    created(e) {
+      return e;
+    }
   }
-
 
   /**
    * Инициализация `__fast__`.
@@ -123,118 +126,125 @@
    */
   function renderComponent($elem, componentName) {
     //try {
-      const entryChilds = $elem.childNodes;
-      const entrySlots = $elem.querySelectorAll("slot");
-      const entryAttributes = (($elem) => {
-        const result = {};
-        for (let a of $elem.attributes) {
-          result[a.nodeName] = a.nodeValue;
-        }
-        return result;
-      })($elem);
-
-      const component = __fast__.components[componentName];
-      const props = JSON.parse(JSON.stringify(component.props));
-      const simpleAttributes = {};
-
-      //заполнить свойства экземпляра
-      for (let attr in entryAttributes) {
-        let match = false;
-        for (let prop in props) {
-          if (prop == attr) {
-            match = true;
-            props[prop].value = entryAttributes[attr];
-          }
-        }
-        if (!match) simpleAttributes[attr] = entryAttributes[attr];
+    const entryChilds = $elem.childNodes;
+    const entrySlots = $elem.querySelectorAll("slot");
+    const entryAttributes = (($elem) => {
+      const result = {};
+      for (let a of $elem.attributes) {
+        result[a.nodeName] = a.nodeValue;
       }
+      return result;
+    })($elem);
 
-      /** Создание компонента из шаблона по пропсам */
-      const $componentInstance = (function (props) {
-        const parser = new DOMParser();
+    const component = __fast__.components[componentName];
+    const props = JSON.parse(JSON.stringify(component.props));
+    const simpleAttributes = {};
 
-        const $template = parser.parseFromString(
-          component.template(props),
-          "text/html"
-        ).body;
-        const $elems = $template.querySelectorAll("*");
+    //заполнить свойства экземпляра
+    for (let attr in entryAttributes) {
+      let match = false;
+      for (let prop in props) {
+        if (prop == attr) {
+          match = true;
+          props[prop].value = entryAttributes[attr];
+        }
+      }
+      if (!match) simpleAttributes[attr] = entryAttributes[attr];
+    }
 
-        /** Создание обработчиков событий */
-        $elems.forEach(function ($element) {
-          for (let attr of $element.attributes) {
-            if (attr.name.indexOf('on') + 1 == 1) {
-              const attrName = attr.name;
-              const eventType = attrName.slice(2);
-              const attrValue = attr.nodeValue;
-              const eventFunctionName = `__${attrValue}`; 
+    /** Создание компонента из шаблона по пропсам */
+    const $componentInstance = (function (props) {
+      const parser = new DOMParser();
+      const newI = component.create(props);
+      const $template = parser.parseFromString(
+        newI.template,
+        "text/html"
+      ).body;
+      const $elems = $template.querySelectorAll("*");
 
-              $element[eventFunctionName] = component.methods[attrValue];
-              $element.addEventListener(eventType, $element[eventFunctionName]);
-              $element.removeAttribute(attrName);
+      
+      
+      /** Создание обработчиков событий */
+      $elems.forEach(function ($element) {
+        for (let attr of $element.attributes) {
+          if (attr.name.indexOf("on") + 1 == 1) {
+            const attrName = attr.name;
+            const eventType = attrName.slice(2);
+            const attrValue = attr.nodeValue;
+            const eventFunctionName = `__${attrValue}`;
 
-            }
+            
+
+            $element[eventFunctionName] = component.methods[attrValue];
+            $element.addEventListener(eventType, $element[eventFunctionName]);
+            $element.removeAttribute(attrName);
           }
-        });
-
-        /** Экземпляр компонента */
-        const $instance = $template.children[0];
-
-        $instance.__created = component.created;
-        $instance.__mounted = component.mounted;
-
-        return $instance;
-      })(props);
-
-      findComponents($componentInstance.querySelectorAll("*"));
-      $componentInstance.__created({
-        component: __fast__.components[componentName],
-        instance: $componentInstance,
-        props: props
+        }
       });
 
-      //установить простые атрибуты для узла
-      for (let attr in simpleAttributes) {
-        if ($componentInstance.hasAttribute(attr)) {
-            $componentInstance.setAttribute(
-            attr,
-            `${$componentInstance.getAttribute(attr)} ${simpleAttributes[attr]}`
-          );
-        } else {
-            $componentInstance.setAttribute(attr, simpleAttributes[attr]);
-        }
+
+      /** Экземпляр компонента */
+      const $instance = $template.children[0];
+
+      $instance.__props = props;
+      $instance.__created = component.created;
+      $instance.__mounted = component.mounted;
+      $instance.__methods = newI.methods;
+
+      return $instance;
+    })(props);
+
+    findComponents($componentInstance.querySelectorAll("*"));
+    $componentInstance.__created({
+      component: __fast__.components[componentName],
+      instance: $componentInstance,
+      props: props,
+    });
+
+    //установить простые атрибуты для узла
+    for (let attr in simpleAttributes) {
+      
+      if ($componentInstance.hasAttribute(attr)) {
+        $componentInstance.setAttribute(
+          attr,
+          `${$componentInstance.getAttribute(attr)} ${simpleAttributes[attr]}`
+        );
+      } else {
+        $componentInstance.setAttribute(attr, simpleAttributes[attr]);
       }
+    }
 
-      const newElemSlots = $componentInstance.querySelectorAll("slot");
+    const newElemSlots = $componentInstance.querySelectorAll("slot");
 
-      //перенести дочернии узлы в слоты
-      if (entryChilds.length && newElemSlots.length) {
-        //если нужно по слотам
-        if (entrySlots.length) {
-          for (let outSlot of entrySlots) {
-            const outSlotName = outSlot.getAttribute("name");
-            const outChilds = outSlot.childNodes;
+    //перенести дочернии узлы в слоты
+    if (entryChilds.length && newElemSlots.length) {
+      //если нужно по слотам
+      if (entrySlots.length) {
+        for (let outSlot of entrySlots) {
+          const outSlotName = outSlot.getAttribute("name");
+          const outChilds = outSlot.childNodes;
 
-            for (let inSlot of newElemSlots) {
-              const inSlotName = inSlot.getAttribute("name");
-              if (outSlotName == inSlotName) сhildToSlot(outChilds, inSlot);
-            }
+          for (let inSlot of newElemSlots) {
+            const inSlotName = inSlot.getAttribute("name");
+            if (outSlotName == inSlotName) сhildToSlot(outChilds, inSlot);
           }
-
-          //все в один слот
-        } else {
-          сhildToSlot(entryChilds, newElemSlots[0]);
         }
+
+        //все в один слот
+      } else {
+        сhildToSlot(entryChilds, newElemSlots[0]);
       }
+    }
 
-      $elem.parentElement.replaceChild($componentInstance, $elem);
-      __fast__.components[componentName].instances.push($componentInstance);
-      $componentInstance.__mounted({
-        component: __fast__.components[componentName],
-        instance: $componentInstance,
-        props: props
-      });
+    $elem.parentElement.replaceChild($componentInstance, $elem);
+    __fast__.components[componentName].instances.push($componentInstance);
+    $componentInstance.__mounted({
+      component: __fast__.components[componentName],
+      instance: $componentInstance,
+      props: props,
+    });
 
-      return $elem;
+    return $elem;
     /*  
     } catch (err) {
       console.error(`Component <${componentName}> can't be rendered.`);
@@ -297,7 +307,7 @@
 
   /**
    * Разбирает строку компонента и возвращает 3 объекта (шаблон, скрипт, стили).
-   * 
+   *
    * @param {String} context - строчное представление файла компонента
    * @param {String} componentName - имя компонента
    */
@@ -320,30 +330,31 @@
 
       const result = {
         props: {},
-        created: function(e){return e},
-        mounted: function(e){return e},
+        created: function (e) {
+          return e;
+        },
+        mounted: function (e) {
+          return e;
+        },
         methods: {},
         ...new Function(`return ${raw}`)(),
       };
 
-      
-
       return result;
     })();
 
-    const fragmentStyle = (function(fragment){
+    const fragmentStyle = (function (fragment) {
       let style = fragment.querySelector("style")
-      ? fragment
-          .querySelector("style")
-          .textContent.replaceAll(
-            "@component",
-            `${__fast__.config.componentsDirectory}/${componentName}/assets`
-          )
-      : "";
+        ? fragment
+            .querySelector("style")
+            .textContent.replaceAll(
+              "@component",
+              `${__fast__.config.componentsDirectory}/${componentName}/assets`
+            )
+        : "";
 
       return style;
-
-    })(fragment)  
+    })(fragment);
 
     return {
       fragmentTemplate: fragmentTemplate,
@@ -360,78 +371,81 @@
    */
   function installComponent(context, componentName) {
     //try {
-      const { fragmentTemplate, fragmentScript, fragmentStyle } = parseTemplate(
-        context,
-        componentName
-      );
+    const { fragmentTemplate, fragmentScript, fragmentStyle } = parseTemplate(
+      context,
+      componentName
+    );
 
-      const template = (function (props, methods, fragmentTemplate) {
-        /** Строчный шаблон компонента */
-        const html = (function(fragmentTemplate){
-          let tpl = fragmentTemplate.children[0].outerHTML || '';
+    const template = (function (props, methods, fragmentTemplate) {
+      /** Строчный шаблон компонента */
+      const html = (function (fragmentTemplate) {
+        let tpl = fragmentTemplate.children[0].outerHTML || "";
 
-          /** 
-           * Интерполяция названий методов в инлайновых обработчиках событий
-           * пример on:click="${onClick}" => on:click="onClick"
-           * методы событий крепятся к экземпляру компонента на этапе создания экземпляра 
-           * */
-          tpl = tpl.replace(/on([a-z]+)=['"]?\$\{([\w\d_]+)\}['"]?/gi, function(e,a,b){
-            return `on${a}="${b}"`
-          });
+        /**
+         * Интерполяция названий методов в инлайновых обработчиках событий
+         * пример on:click="${onClick}" => on:click="onClick"
+         * методы событий крепятся к экземпляру компонента на этапе создания экземпляра
+         * */
+        tpl = tpl.replace(
+          /on([a-z]+)=['"]?\$\{([\w\d_]+)\}['"]?/gi,
+          function (e, a, b) {
+            return `on${a}="${b}"`;
+          }
+        );
 
-          return tpl;
-        })(fragmentTemplate);  
+        return tpl;
+      })(fragmentTemplate);
 
-        /** Интерполяция методов компонента */
-        const fns = (function (methods) {
-          return Object.keys(methods)
-            .map(function (f) {
-              return `const ${f} = ${methods[f]};\n`;
-            })
-            .join("");
-        })(methods);
+      /** Интерполяция методов компонента */
+      let fnsName = '';
+      const fns = (function (methods) {
+        return Object.keys(methods)
+          .map(function (f) {
+            fnsName += `${f}:${f},` 
+            return `const ${f} = ${methods[f]};\n`;
+          })
+          .join("");
+      })(methods);
 
-        
+      /** Пропсы компонента */
+      const vars = (function (props) {
+        return Object.keys(props)
+          .map(function (v) {
+            return `const ${v} = (props.${v} && props.${v}.value) ? props.${v}.value : undefined;\n`;
+          })
+          .join("");
+      })(props);
 
-        /** Пропсы компонента */
-        const vars = (function (props) {
-          return Object.keys(props)
-            .map(function (v) {
-              return `const ${v} = (props.${v} && props.${v}.value) ? props.${v}.value : 'undefined';\n`;
-            })
-            .join("");
-        })(props);
+      return new Function("props",`${vars}${fns} return {methods:{${fnsName}},template:\`${html}\`}`);
+    })(fragmentScript.props, fragmentScript.methods, fragmentTemplate);
 
-        return new Function("props", `${vars}${fns} return \`${html}\``);
-      })(fragmentScript.props, fragmentScript.methods, fragmentTemplate);
+    if (!__fast__.components[componentName])
+      __fast__.components[componentName] = {};
 
-      if (!__fast__.components[componentName])
-        __fast__.components[componentName] = {};
+    const component = __fast__.components[componentName];
 
-      const component = __fast__.components[componentName];
+    /** {String} Имя компонента */
+    component.name = componentName;
+    /** {Function} Шаблон */
+    component.create = template;
+    /** {String} css стили для шаблона */
+    component.style = fragmentStyle;
+    /** {Object} Свойства для отрисовки шаблона */
+    component.props = fragmentScript.props;
+    /** {Function} Функция вызываемая при создании экземпляра компонента */
+    component.created = fragmentScript.created;
+    /** {Function} Функция вызываемая при мантировании компонента */
+    component.mounted = fragmentScript.mounted;
+    /** {Object} Методы компонента */
+    component.methods = fragmentScript.methods;
+    /** {array} экземпляры */
+    component.instances = [];
+    /** {String} путь к компоненту */
+    component.path = `${__fast__.config.componentsDirectory}/${componentName}/`;
 
-      /** {String} Имя компонента */
-      component.name = componentName;
-      /** {Function} Шаблон */
-      component.template = template;
-      /** {String} css стили для шаблона */
-      component.style = fragmentStyle;
-      /** {Object} Свойства для отрисовки шаблона */
-      component.props = fragmentScript.props;
-      /** {Function} Функция вызываемая при создании экземпляра компонента */
-      component.created = fragmentScript.created;
-      /** {Function} Функция вызываемая при мантировании компонента */
-      component.mounted = fragmentScript.mounted;
-      /** {Object} Методы компонента */
-      component.methods = fragmentScript.methods;
-      /** {array} экземпляры */
-      component.instances = [];
-      /** {String} путь к компоненту */
-      component.path = `${__fast__.config.componentsDirectory}/${componentName}/`
+    addStyles(fragmentStyle);
 
-      addStyles(fragmentStyle);
-
-      return component;
+    return component;
     /*  
     } catch (err) {
       console.error(`Component <${componentName}> not found and can't be installed. Check component file directory.`);
@@ -453,9 +467,9 @@
     }
 
     if (Sass) {
-      Sass.compile(cssRules, function(result){
+      Sass.compile(cssRules, function (result) {
         fastStyles.textContent += `${result.text}\n`;
-      })
+      });
     } else {
       fastStyles.textContent += `${cssRules}\n`;
     }

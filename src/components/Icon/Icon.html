@@ -15,7 +15,7 @@
                 return response.text();
             })
             .then(function (context) {
-                e.instance.innerHTML = context;
+                if (context.includes('<svg')) e.instance.innerHTML = context;
             });
         }
     })
@@ -25,6 +25,8 @@
     .icon {
         width: 24px;
         height: 24px;
+        display: flex;
+        align-items: center;
     }
 
     .page_theme_light .icon svg {
