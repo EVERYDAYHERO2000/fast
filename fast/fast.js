@@ -116,6 +116,9 @@
       });
       if (callback) callback(__fast__, $elems);
     }
+
+    console.log(needToInstall)
+
   }
 
   /**
@@ -157,14 +160,28 @@
     /** Создание компонента из шаблона по пропсам */
     const $componentInstance = (function (props) {
       const parser = new DOMParser();
+      //console.log(__fast__.components[componentName], componentName, component.name, component.create)
+
+      if (componentName == 'Icon'){
+        console.log(typeof component, component.create, __fast__.components.Icon.name)
+
+        component.create = function(props) {
+          const name = (props.name && props.name.value) ? props.name.value : undefined;
+           return {methods:{},template:`<div class="icon"></div>`}
+        }
+        component.instances = []
+      }  
+  
       const newI = component.create(props);
       const $template = parser.parseFromString(
         newI.template,
         "text/html"
       ).body;
-      const $elems = $template.querySelectorAll("*");
 
       
+
+      const $elems = $template.querySelectorAll("*");
+
       
       /** Создание обработчиков событий */
       $elems.forEach(function ($element) {
@@ -196,7 +213,7 @@
       return $instance;
     })(props);
 
-
+    
 
     findComponents($componentInstance.querySelectorAll("*"));
     $componentInstance.__created({
@@ -256,6 +273,7 @@
       console.error(`Component <${componentName}> can't be rendered.`);
     }
     */
+   
   }
 
   /**
@@ -431,6 +449,8 @@
           })
           .join("");
       })(props);
+
+      
 
       return new Function("props",`${vars}${fns} return {methods:{${fnsName}},template:\`${html}\`}`);
     })(fragmentScript.props, fragmentScript.methods, fragmentTemplate);

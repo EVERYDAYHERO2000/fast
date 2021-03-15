@@ -1,0 +1,39 @@
+<template>
+    <div class="stars">
+        
+        ${setRait(rait)}
+    </div>
+</template>
+
+<script>
+    ({
+        props: {
+            rait: {
+                type: Number
+            }
+        },
+        methods: {
+            setRait: function(rait){
+                rait = +rait;
+                let stars = Array(5).fill(1).map((e,i)=> {
+                    
+                    return (i < rait) ? 
+                        `<Icon: name="star" class="stars__star stars__star_filed"></Icon:>` : 
+                        `<Icon: name="star" class="stars__star"></Icon:>`;
+                }).join('');
+
+                return stars;
+            }
+        }
+    })
+</script>
+
+<style>
+    .stars {
+        display: flex;
+
+        &__star {
+
+        }
+    }
+</style>

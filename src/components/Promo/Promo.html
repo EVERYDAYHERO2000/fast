@@ -1,9 +1,12 @@
 <template>
     <div class="promo">
         <div class="promo__description">
-            <Company-logo:>123</Company-logo:>
-            <h1>${title}</h1>
-            <div>${description}</div>
+            <Company-logo:></Company-logo:>
+            <Stars: rait="4"></Stars:>
+            <div class="promo__title">
+                <h1>${title}</h1>
+                <div>${description}</div>
+            </div>    
             <Button: text="Записаться онлайн" type="gdu" size="m"></Button:>
         </div>
         <div class="promo__cover">
@@ -44,6 +47,10 @@
             flex-direction: column;
             justify-content: center;
             font-size: 18px;
+        }
+
+        &__title {
+            margin: 24px 0;
         }
 
         &__cover {
