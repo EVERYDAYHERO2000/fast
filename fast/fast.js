@@ -117,8 +117,6 @@
       if (callback) callback(__fast__, $elems);
     }
 
-    console.log(needToInstall)
-
   }
 
   /**
@@ -163,7 +161,7 @@
       //console.log(__fast__.components[componentName], componentName, component.name, component.create)
 
       if (componentName == 'Icon'){
-        console.log(typeof component, component.create, __fast__.components.Icon.name)
+        
 
         component.create = function(props) {
           const name = (props.name && props.name.value) ? props.name.value : undefined;
