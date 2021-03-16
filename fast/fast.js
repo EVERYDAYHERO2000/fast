@@ -49,8 +49,8 @@
       result.forEach(function (r) {
         if (!isInstalled(e.name)) installComponent(r.context, r.name);
       });
-      findComponents($entryElems, function (f) {
-        if (callback) callback(f);
+      findComponents($entryElems, function(e){
+        if (callback) callback(e);
       });
     });
   }
@@ -69,7 +69,7 @@
       if (entryPoint.tagName) entryPoint.querySelectorAll("*").forEach((e) => {
         if (tagNameIsComponent(e.tagName)) {
           const name = getComponentName(e.tagName);
-          arr.push(name);
+          if (!isInstalled(name) && !arr.includes(name)) arr.push(name);
         }
       });
       return arr;
@@ -100,7 +100,7 @@
           const name = getComponentName(tagName);
 
           /** если установлен */
-          if (isInstalled(name)) {
+          if (isInstalled(name)) {  
             renderComponent(entryPoint, name, function(el){
                 
             });
@@ -191,6 +191,7 @@
    * @param {String} componentName - имя компонента
    */
   function parseTemplate(context, componentName) {
+      
     const parser = new DOMParser();
     const fragment = parser.parseFromString(context, "text/html");
     const fragmentTemplate = fragment.querySelector("template").content;
@@ -374,7 +375,7 @@
   function renderComponent($elem, componentName, callback) {
 
 
-    //try {
+    try {
     const entryChilds = $elem.childNodes;
     const entrySlots = $elem.querySelectorAll("slot");
     const entryAttributes = (($elem) => {
@@ -504,11 +505,11 @@
     if (callback) callback($componentInstance)
 
     return $componentInstance;
-    /*  
+    
     } catch (err) {
       console.error(`Component <${componentName}> can't be rendered.`);
     }
-    */
+    
    
   }
 
