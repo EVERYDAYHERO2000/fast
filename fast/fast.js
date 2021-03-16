@@ -296,6 +296,8 @@
           }
         );
 
+        tpl = tpl.replace(/ +(?= )/g,'');
+
         return tpl;
       })(fragmentTemplate);
 
