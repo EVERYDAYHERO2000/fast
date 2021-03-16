@@ -232,6 +232,8 @@
             )
         : "";
 
+        style = style.trim().replace(/ +(?= )/g,'');
+
       return style;
     })(fragment);
 
