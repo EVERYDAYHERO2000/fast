@@ -44,13 +44,19 @@
   function init(config, $entryElems, callback) {
     $entryElems = $entryElems || document.body;
     __fast__.config = { ...__fast__.config, ...config };
-    addStyles(__fast__.config.css);
+    addStyles(__fast__.config.css + '.needToRender {opacity: 0}');
+
+    $entryElems.classList.add('needToRender');
+
     loadComponents(__fast__.config.components, function (result) {
       result.forEach(function (r) {
         if (!isInstalled(r.name)) installComponent(r.context, r.name);
       });
       findComponents($entryElems, function(e){
         if (callback) callback(e);
+
+        /** нужно починить */
+        setTimeout(()=> $entryElems.classList.remove('needToRender'), 500);
       });
     });
   }
@@ -379,7 +385,6 @@
    * @param {String} componentName - название компонента
    */
   function renderComponent($elem, componentName, callback) {
-
 
     try {
     const entryChilds = $elem.childNodes;
