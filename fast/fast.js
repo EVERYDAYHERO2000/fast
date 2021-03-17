@@ -29,19 +29,6 @@
     parseTemplate: parseTemplate,
   });
 
-  /**
-   * Класс компонента
-   */
-  class Component {
-    constructor(fn) {
-      this.props = fn ? fn.props : {};
-      this.methods = fn ? fn.methods : {};
-      this.name = fn ? fn.name : "";
-      this.mounted = fn ? fn.mounted : (e) => false;
-      this.created = fn ? fn.created : (e) => false;
-      return this;
-    }
-  }
 
   /**
    * Инициализация `__fast__`.
@@ -203,50 +190,15 @@
   function parseTemplate(context, componentName) {
     const parser = new DOMParser();
     const fragment = parser.parseFromString(context, "text/html");
-    const fragmentTemplate = fragment.querySelector("template").content;
-    const fragmentScript = (function () {
-      const raw = (function () {
-        let trimed = fragment.querySelector("script")
-          ? fragment.querySelector("script").innerText.trim()
-          : "({})";
-        trimed =
-          trimed[trimed.length - 1] == ";"
-            ? trimed.slice(0, trimed.length - 1)
-            : trimed;
-        trimed = trimed.slice(1, trimed.length - 1);
-        return trimed;
-      })();
+    const fragmentTemplate = fragment.querySelector("template").content.children[0].outerHTML;
+    const fragmentStyle = fragment.querySelector("style").textContent;
+    const fragmentScript = fragment.querySelector("script").textContent;
 
-      const result = {
-        props: {},
-        created: function (e) {
-          return e;
-        },
-        mounted: function (e) {
-          return e;
-        },
-        methods: {},
-        ...new Function(`return ${raw}`)(),
-      };
-
-      return result;
-    })();
-
-    const fragmentStyle = (function (fragment) {
-      let style = fragment.querySelector("style")
-        ? fragment.querySelector("style").textContent : "";
-
-      style = tpl = replaceAlias(style, componentName);
-
-      style = style.trim().replace(/ +(?= )/g, "");
-
-      return style;
-    })(fragment);
 
     return {
-      fragmentTemplate: fragmentTemplate,
-      fragmentScript: fragmentScript,
-      fragmentStyle: fragmentStyle,
+      Template: cookTemplate(fragmentTemplate, componentName),
+      Script: cookScript(fragmentScript, componentName),
+      Style: cookStyle(fragmentStyle, componentName),
     };
   }
 
@@ -314,38 +266,27 @@
    */
   function installComponent(context, componentName, callback) {
     //try {
-    const { fragmentTemplate, fragmentScript, fragmentStyle } = parseTemplate(
+    const { Template, Script, Style } = parseTemplate(
       context,
       componentName
     );
 
-    const template = (function (props, methods, fragmentTemplate) {
-      /** Строчный шаблон компонента */
-      const html = (function (fragmentTemplate) {
-        let tpl = fragmentTemplate.children[0].outerHTML || "";
+    const js = {
+        props: {},
+        created: function (e) {
+          return e;
+        },
+        mounted: function (e) {
+          return e;
+        },
+        methods: {},
+        ...new Function(`return ${Script}`)(),
+      };    
 
-        tpl = replaceAlias(tpl, componentName);
+    const template = (function (js, Template) {  
 
-        /**
-         * Интерполяция названий методов в инлайновых обработчиках событий
-         * пример on:click="${onClick}" => on:click="onClick"
-         * методы событий крепятся к экземпляру компонента на этапе создания экземпляра
-         * */
-        tpl = tpl.replace(
-          /on([a-z]+)=['"]?\$\{([\w\d_]+)\}['"]?/gi,
-          function (e, a, b) {
-            return `on${a}="${b}"`;
-          }
-        );
-
-        /** Лишнии пробелы */
-        tpl = tpl.replace(/ +(?= )/g, "");
-
-        /** Исправить стрелочные функции */
-        tpl = tpl.replaceAll("=&gt;", "=>");
-
-        return tpl;
-      })(fragmentTemplate);
+      const methods = js.methods;
+      const props = js.props;  
 
       /** Интерполяция методов компонента */
       let fnsName = "";
@@ -369,35 +310,33 @@
 
       return new Function(
         "props",
-        `${vars}${fns} return {methods:{${fnsName}},template:\`${html}\`}`
+        `${vars}${fns} return {methods:{${fnsName}},template:\`${Template}\`}`
       );
-    })(fragmentScript.props, fragmentScript.methods, fragmentTemplate);
+    })(js, Template);
 
-    if (!__fast__.components[componentName])
-      __fast__.components[componentName] = {};
 
-    const component = __fast__.components[componentName];
+    const component = __fast__.components[componentName] = {
+        /** {String} Имя компонента */
+        name : componentName,
+        /** {Function} Шаблон */
+        create : template,
+        /** {String} css стили для шаблона */
+        style : Style,
+        /** {Object} Свойства для отрисовки шаблона */
+        props : js.props,
+        /** {Function} Функция вызываемая при создании экземпляра компонента */
+        created : js.created,
+        /** {Function} Функция вызываемая при монтировании компонента */
+        mounted : js.mounted,
+        /** {Object} Методы компонента */
+        methods : js.methods,
+        /** {array} экземпляры */
+        instances : [],
+        /** {String} путь к компоненту */
+        path : `${__fast__.config.componentsDirectory}/${componentName}/`
+    };
 
-    /** {String} Имя компонента */
-    component.name = componentName;
-    /** {Function} Шаблон */
-    component.create = template;
-    /** {String} css стили для шаблона */
-    component.style = fragmentStyle;
-    /** {Object} Свойства для отрисовки шаблона */
-    component.props = fragmentScript.props;
-    /** {Function} Функция вызываемая при создании экземпляра компонента */
-    component.created = fragmentScript.created;
-    /** {Function} Функция вызываемая при монтировании компонента */
-    component.mounted = fragmentScript.mounted;
-    /** {Object} Методы компонента */
-    component.methods = fragmentScript.methods;
-    /** {array} экземпляры */
-    component.instances = [];
-    /** {String} путь к компоненту */
-    component.path = `${__fast__.config.componentsDirectory}/${componentName}/`;
-
-    addStyles(fragmentStyle);
+    addStyles(Style);
 
     if (callback) callback(component);
 
@@ -409,6 +348,48 @@
     */
   }
 
+  function cookTemplate(fragment, componentName) {
+
+    fragment = replaceAlias(fragment, componentName);
+
+    /**
+     * Интерполяция названий методов в инлайновых обработчиках событий
+     * пример on:click="${onClick}" => on:click="onClick"
+     * методы событий крепятся к экземпляру компонента на этапе создания экземпляра
+     * */
+    fragment = fragment.replace(
+      /on([a-z]+)=['"]?\$\{([\w\d_]+)\}['"]?/gi,
+      function (e, a, b) {
+        return `on${a}="${b}"`;
+      }
+    );
+
+    /** Лишнии пробелы */
+    fragment = fragment.replace(/ +(?= )/g, "");
+
+    /** Исправить стрелочные функции */
+    fragment = fragment.replaceAll("=&gt;", "=>");
+
+    return fragment;
+  }
+
+  function cookStyle(fragment, componentName) {
+
+      fragment = replaceAlias(fragment, componentName);
+
+      fragment = fragment.trim().replace(/ +(?= )/g, "");
+
+      return fragment;
+  }
+
+  function cookScript(fragment, componentName) {
+        fragment = fragment.trim();
+        fragment = (fragment.length) ? fragment : '({})';
+        fragment = replaceAlias(fragment, componentName);
+
+        return fragment;
+  }
+
   /**
    * Отрендерить и заменить узел на компонент.
    *
@@ -416,7 +397,7 @@
    * @param {String} componentName - название компонента
    */
   function renderComponent($elem, componentName, callback) {
-    try {
+    //try {
       const entryChilds = $elem.childNodes;
       const entrySlots = $elem.querySelectorAll("slot");
       const entryAttributes = (($elem) => {
@@ -452,10 +433,21 @@
         const $template = parser.parseFromString(newI.template, "text/html")
           .body;
 
+        const $instance = $template.children[0];
+
+        findComponents($instance, function(e){
+            
+        });
+
         const $elems = $template.querySelectorAll("*");
+
+        
 
         /** Создание обработчиков событий */
         $elems.forEach(function ($element) {
+
+        
+
           for (let attr of $element.attributes) {
             if (attr.name.indexOf("on") + 1 == 1) {
               const attrName = attr.name;
@@ -463,15 +455,16 @@
               const attrValue = attr.nodeValue;
               const eventFunctionName = `__${attrValue}`;
 
-              $element[eventFunctionName] = component.methods[attrValue];
+              $element[eventFunctionName] = newI.methods[attrValue];
               $element.addEventListener(eventType, $element[eventFunctionName]);
               $element.removeAttribute(attrName);
+
             }
           }
         });
 
         /** Экземпляр компонента */
-        const $instance = $template.children[0];
+        
 
         $instance.__props = props;
         $instance.__created = component.created;
@@ -481,7 +474,7 @@
         return $instance;
       })(props);
 
-      findComponents($componentInstance);
+      
       $componentInstance.__created({
         component: __fast__.components[componentName],
         instance: $componentInstance,
@@ -533,9 +526,11 @@
       if (callback) callback($componentInstance);
 
       return $componentInstance;
+    /*  
     } catch (err) {
       console.error(`Component <${componentName}> can't be rendered.`);
     }
+    */
   }
 
   /**
@@ -547,5 +542,5 @@
   function slotToSlot(outSlot, inSlot) {
     inSlot.parentElement.replaceChild(outSlot, inSlot);
   }
-  
+
 })();
