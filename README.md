@@ -154,7 +154,7 @@
 
 |TEMPLATE |SCRIPT | |
 |--|--|--|
-|`<div onclick="click">Кнопка</div>`|```({methods: {click: (e)=> console.log('Клик!', e)}})``` |Консоль выведет `Клик!` и объект события.| 
+|`<div onclick="click">Кнопка</div>`|```({methods: {click: (e)=> console.log('Клик!', e)}})``` |Кликнув на элемент консоль выведет `Клик!` и объект события.| 
 
 ### STYLE
 1. Стили можно писать на scss, но нужно подключить sass.sync.js
