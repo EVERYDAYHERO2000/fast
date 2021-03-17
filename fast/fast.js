@@ -47,7 +47,7 @@
     addStyles(__fast__.config.css);
     loadComponents(__fast__.config.components, function (result) {
       result.forEach(function (r) {
-        if (!isInstalled(e.name)) installComponent(r.context, r.name);
+        if (!isInstalled(r.name)) installComponent(r.context, r.name);
       });
       findComponents($entryElems, function(e){
         if (callback) callback(e);
@@ -299,10 +299,16 @@
           }
         );
 
+        /** Лишнии пробелы */
         tpl = tpl.replace(/ +(?= )/g,'');
+
+        /** Исправить стрелочные функции */
+        tpl = tpl.replaceAll('=&gt;', '=>');
 
         return tpl;
       })(fragmentTemplate);
+
+      
 
       /** Интерполяция методов компонента */
       let fnsName = "";
