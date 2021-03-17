@@ -12,6 +12,34 @@
 ## Быстрый старт
 Понадобится любимый браузер и редактор для кода (например vscode с плагином для live preview). GitHub pages что-бы поделиться ссылкой на прототип.
 
+##### Структура проекта
+```
+index.html
+
+fast/
+  |
+  fast.js
+
+src/
+  |
+  components/
+    |
+    My-component-firs/
+      |
+      My-component-firs.html
+      
+    My-component-second/
+      |
+      My-component-second.html
+
+      assets/
+        |
+        image.svg
+
+        pic.png
+    ...    
+```
+
 В `index.html` Подклюение fast.js в конце body и инициируем его `__fast__.init({options}, HTMLElement)`.
 
 ##### index.html
