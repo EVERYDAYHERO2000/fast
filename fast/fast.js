@@ -44,9 +44,9 @@
   function init(config, $entryElems, callback) {
     $entryElems = $entryElems || document.body;
     __fast__.config = { ...__fast__.config, ...config };
-    addStyles(__fast__.config.css + '.needToRender {opacity: 0}');
+    addStyles(__fast__.config.css + '.inited {opacity: 0}');
 
-    $entryElems.classList.add('needToRender');
+    $entryElems.classList.add('inited');
 
     loadComponents(__fast__.config.components, function (result) {
       result.forEach(function (r) {
@@ -56,7 +56,7 @@
         if (callback) callback(e);
 
         /** нужно починить */
-        setTimeout(()=> $entryElems.classList.remove('needToRender'), 500);
+        setTimeout(()=> $entryElems.classList.remove('inited'), 500);
       });
     });
   }
