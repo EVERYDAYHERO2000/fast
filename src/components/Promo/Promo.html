@@ -1,13 +1,13 @@
 <template>
     <div class="promo">
         <div class="promo__description">
-            <Company-logo:></Company-logo:>
+            <Company-logo: onclick="${test}"></Company-logo:>
             <Stars: rait="4"></Stars:>
             <div class="promo__title">
                 <h1>${title}</h1>
                 <div>${description}</div>
             </div>    
-            <Button: text="Записаться онлайн" type="gdu" size="m"></Button:>
+            <Button: onclick="${test}" text="Записаться онлайн" type="gdu" size="m"></Button:>
         </div>
         <div class="promo__cover">
             <div class="promo__image"></div>
@@ -25,7 +25,11 @@
             description: {
                 type: String
             }
-
+        },
+        methods: {
+            test: function(e,el) {
+                console.log('Click!', e,el)
+            }
         }
     })
 </script>
