@@ -594,7 +594,6 @@
       if (entrySlots.length) {
         for (let outSlot of entrySlots) {
           const outSlotName = outSlot.getAttribute("name");
-          const outChilds = outSlot.childNodes;
 
           for (let inSlot of newElemSlots) {
             const inSlotName = inSlot.getAttribute("name");
