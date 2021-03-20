@@ -76,7 +76,7 @@
 
     $entryElem.classList.add("fast-inited");
 
-    loadComponents(__fast__.config.components, function (result) {
+    loadComponents(__fast__.config.components, (result) => {
       installMultipleComponents(result);
       findComponents($entryElem, function ($elem) {
         if (callback) callback($elem);
@@ -108,7 +108,7 @@
       return arr;
     })($entryElem);
 
-    loadComponents(needToInstall, function (result) {
+    loadComponents(needToInstall, (result) => {
       installMultipleComponents(result);
 
       search($entryElem);
@@ -190,7 +190,7 @@
    * @param {Function} callback - калбек с аргументами (ключ, значение)
    */
   function forEachObject (obj, callback) {
-    Object.keys(obj).forEach(function(key){
+    Object.keys(obj).forEach((key) => {
       callback(key, obj[key]);
     });
   }
@@ -224,15 +224,15 @@
     const results = [];
     const config = __fast__.config;
 
-    components.forEach(function (componentName, i) {
+    components.forEach((componentName, i) => {
       list.push(
         fetch(
           `${config.componentsDirectory}/${componentName}/${componentName}.${config.componentsExtension}`
         )
-          .then(function (response) {
+          .then((response) => {
             return response.text();
           })
-          .then(function (context) {
+          .then((context) => {
             results[i] = {
               context: context,
               name: componentName,
@@ -297,7 +297,7 @@
       }
     );
 
-    fragment = fragment.replace(/(\${.+\})/gi, function (e, i) {
+    fragment = fragment.replace(/(\${.+\})/gi, (e, i) => {
       return i.replaceAll("&gt;", ">").replaceAll("&lt;", "<");
     });
 
@@ -364,7 +364,7 @@
     }
 
     if (Sass) {
-      Sass.compile(cssRules, function (result) {
+      Sass.compile(cssRules, (result) => {
         fastStyles.textContent += result.text ? `${result.text}\n` : "";
       });
     } else {
@@ -382,7 +382,7 @@
   function installMultipleComponents(series, callback) {
     series.forEach((s) => {
       if (!isInstalled(s.name))
-        installComponent(s.context, s.name, function (component) {
+        installComponent(s.context, s.name, (component) => {
           if (callback) callback(component);
         });
     });
@@ -477,24 +477,24 @@
     const component = __fast__.components[componentName];
     const entryChilds = $elem.childNodes;
     const entrySlots = $elem.querySelectorAll("slot");
-    const entryMethods = (function($elem){
+    const entryMethods = (($elem) => {
       const methods = {};
-      forEachObject($elem, function(key, value){
+      forEachObject($elem, (key, value) => {
         if (key.includes('$')) methods[key] = value;
       });
       return methods;
     })($elem);
 
-    const { props, attributes } = (function ($elem, component) {
+    const { props, attributes } = (($elem, component) => {
       
       const props = cloneObject(component.props);
       const attributes = {};
 
-      forEachObject($elem.attributes, function(attrKey, attribute){
+      forEachObject($elem.attributes, (attrKey, attribute) => {
         const attrName = attribute.nodeName;
         const attrValue = attribute.nodeValue;
         let match = false;
-        forEachObject(props, function(propKey, prop){
+        forEachObject(props, (propKey, prop) => {
           if (propKey == attrName) {
             match = true;
             prop.value = attrValue;
@@ -510,7 +510,7 @@
     })($elem, component);
 
     /** Создание компонента из шаблона по пропсам */
-    const $componentInstance = (function (props) {
+    const $componentInstance = ((props) => {
       const parser = new DOMParser();
 
       const newInstance = component.create(props);
@@ -524,7 +524,7 @@
       const $elems = $template.querySelectorAll("*");
 
       /** Создание обработчиков событий */
-      $elems.forEach(function ($element) {
+      $elems.forEach(($element) => {
         for (let attr of $element.attributes) {
         
           if (isEventAttribute(attr.name)) {
@@ -535,7 +535,7 @@
 
             $element[eventFunctionName] = newInstance.methods[attrValue];
 
-            $element.addEventListener(eventType, function (event) {
+            $element.addEventListener(eventType, (event) => {
               $element[eventFunctionName](event, $element);
             });
             
@@ -554,7 +554,7 @@
       return $instance;
     })(props);
 
-    forEachObject(entryMethods, function(name, method){
+    forEachObject(entryMethods, (name, method) => {
       $componentInstance[name] = method;
     });
    
@@ -565,7 +565,7 @@
     });
     
     //установить простые атрибуты для узла
-    forEachObject(attributes, function(name, value){
+    forEachObject(attributes, (name, value) => {
       if ($componentInstance.hasAttribute(name)) {
         $componentInstance.setAttribute(
           name,
@@ -575,7 +575,7 @@
 
         if (isEventAttribute(name)) {
           $componentInstance.removeAttribute(name);
-          $componentInstance.addEventListener(name.slice(2), function (event) {
+          $componentInstance.addEventListener(name.slice(2), (event) => {
             entryMethods[`$${value}`](event, $componentInstance);
           });
       
