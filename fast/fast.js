@@ -13,8 +13,8 @@
         { "@components": "__fast__.config.componentsDirectory" },
         {
           "@component":
-            "${__fast__.config.componentsDirectory}/${componentName}/assets"
-        }
+            "${__fast__.config.componentsDirectory}/${componentName}/assets",
+        },
       ],
       /** Расширение файлов компонента */
       componentsExtension: "html",
@@ -78,7 +78,7 @@
 
     loadComponents(__fast__.config.components, (result) => {
       installMultipleComponents(result);
-      findComponents($entryElem, function ($elem) {
+      findComponents($entryElem, ($elem) => {
         if (callback) callback($elem);
 
         /** нужно починить */
@@ -167,11 +167,13 @@
 
   /**
    * Является ли атрибут листнером события.
-   * 
-   * @param {String} attrName - название атрибута 
+   *
+   * @param {String} attrName - название атрибута
    */
-  function isEventAttribute(attrName){
-    return (attrName.indexOf("on") + 1 == 1 && attrName.length > 2) ? true : false;
+  function isEventAttribute(attrName) {
+    return attrName.indexOf("on") + 1 == 1 && attrName.length > 2
+      ? true
+      : false;
   }
 
   /**
@@ -185,11 +187,11 @@
 
   /**
    * Хелпер для циклов по массиву.
-   * 
+   *
    * @param {Object} obj - объект для перебора
    * @param {Function} callback - калбек с аргументами (ключ, значение)
    */
-  function forEachObject (obj, callback) {
+  function forEachObject(obj, callback) {
     Object.keys(obj).forEach((key) => {
       callback(key, obj[key]);
     });
@@ -197,10 +199,10 @@
 
   /**
    * Хелпер клонирующий объекты.
-   * 
-   * @param {Object} obj - клонируемый объект 
+   *
+   * @param {Object} obj - клонируемый объект
    */
-  function cloneObject (obj) {
+  function cloneObject(obj) {
     return JSON.parse(JSON.stringify(obj));
   }
 
@@ -292,7 +294,7 @@
      * */
     fragment = fragment.replace(
       /on([a-z]+)=['"]?\$\{([\w\d_]+)\}['"]?/gi,
-      function (e, a, b) {
+      (e, a, b) => {
         return `on${a}="${b}"`;
       }
     );
@@ -480,13 +482,12 @@
     const entryMethods = (($elem) => {
       const methods = {};
       forEachObject($elem, (key, value) => {
-        if (key.includes('$')) methods[key] = value;
+        if (key.includes("$")) methods[key] = value;
       });
       return methods;
     })($elem);
 
     const { props, attributes } = (($elem, component) => {
-      
       const props = cloneObject(component.props);
       const attributes = {};
 
@@ -515,7 +516,10 @@
 
       const newInstance = component.create(props);
 
-      const $template = parser.parseFromString(newInstance.template, "text/html").body;
+      const $template = parser.parseFromString(
+        newInstance.template,
+        "text/html"
+      ).body;
 
       const $instance = $template.children[0];
 
@@ -526,7 +530,6 @@
       /** Создание обработчиков событий */
       $elems.forEach(($element) => {
         for (let attr of $element.attributes) {
-        
           if (isEventAttribute(attr.name)) {
             const attrName = attr.name;
             const eventType = attrName.slice(2);
@@ -538,10 +541,10 @@
             $element.addEventListener(eventType, (event) => {
               $element[eventFunctionName](event, $element);
             });
-            
-            if (!tagNameIsComponent($element.tagName)) $element.removeAttribute(attrName);
-          }
 
+            if (!tagNameIsComponent($element.tagName))
+              $element.removeAttribute(attrName);
+          }
         }
       });
 
@@ -557,13 +560,13 @@
     forEachObject(entryMethods, (name, method) => {
       $componentInstance[name] = method;
     });
-   
+
     $componentInstance.__created({
       component: __fast__.components[componentName],
       instance: $componentInstance,
       props: props,
     });
-    
+
     //установить простые атрибуты для узла
     forEachObject(attributes, (name, value) => {
       if ($componentInstance.hasAttribute(name)) {
@@ -572,19 +575,16 @@
           `${$componentInstance.getAttribute(name)} ${value}`
         );
       } else {
-
         if (isEventAttribute(name)) {
           $componentInstance.removeAttribute(name);
           $componentInstance.addEventListener(name.slice(2), (event) => {
             entryMethods[`$${value}`](event, $componentInstance);
           });
-      
         } else {
           $componentInstance.setAttribute(name, value);
         }
       }
     });
-    
 
     const newElemSlots = $componentInstance.querySelectorAll("slot");
 
