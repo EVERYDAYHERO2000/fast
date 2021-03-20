@@ -74,7 +74,7 @@
   function init(config, $entryElem, callback) {
     $entryElem = $entryElem || document.body;
     __fast__.config = { ...CONFIG, ...config };
-    addStyles(CONFIG.css + '.fast-inited {opacity: 0;}');
+    addStyles(__fast__.config.css + '.fast-inited {opacity: 0;}');
 
     $entryElem.classList.add('fast-inited');
 
