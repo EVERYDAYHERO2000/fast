@@ -74,7 +74,7 @@
   function init(config, $entryElem, callback) {
     $entryElem = $entryElem || document.body;
     __fast__.config = { ...CONFIG, ...config };
-    addStyles(CONFIG.css + '.fast-inited {opacity: 0}');
+    addStyles(CONFIG.css + '.fast-inited {opacity: 0;}');
 
     $entryElem.classList.add('fast-inited');
 
@@ -378,23 +378,25 @@
    * @param {String} cssRules - строка с css
    */
   function addStyles(cssRules) {
-    let fastStyles = document.getElementById('fast-styles');
-    if (!fastStyles) {
-      fastStyles = document.createElement('style');
-      fastStyles.setAttribute('id', 'fast-styles');
-      document.head.append(fastStyles);
+    let $fastStyles = selectNode(document,'#fast-styles');
+    if (!$fastStyles) {
+      $fastStyles = document.createElement('style');
+      $fastStyles.setAttribute('id', 'fast-styles');
+      document.head.append($fastStyles);
     }
+
 
     if (Sass) {
       Sass.compile(cssRules, (result) => {
-        fastStyles.textContent += result.text ? `${result.text}\n` : '';
+        $fastStyles.textContent += result.text ? `${result.text}\n` : '';
       });
     } else {
-      fastStyles.textContent += `${cssRules}\n`;
+      $fastStyles.textContent += `${cssRules}\n`;
     }
 
-    return fastStyles.textContent;
+    return $fastStyles.textContent;
   }
+
 
   /**
    * Установка нескольких компонентов.
@@ -654,4 +656,7 @@
   function slotToSlot(outSlot, inSlot) {
     inSlot.parentElement.replaceChild(outSlot, inSlot);
   }
+
+  
+
 })();
