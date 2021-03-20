@@ -1,32 +1,34 @@
 (() => {
+  const COMPONENTS = {};
+  let CONFIG = {
+    /** Символ компонента */
+    tagSign: ':',
+    /** Директория с компонентами */
+    componentsDirectory: 'src/components',
+    /** Псевдонимы */
+    aliases: [
+      { '@root': '' },
+      { '@components': '__fast__.config.componentsDirectory' },
+      {
+        '@component':
+          '${__fast__.config.componentsDirectory}/${componentName}/assets'
+      }
+    ],
+    /** Расширение файлов компонента */
+    componentsExtension: 'html',
+    /** Предзагрузка компонентов */
+    components: [],
+    /** Глобальные css правила */
+    css: ''
+  };
+
   const __fast__ = (window.__fast__ = {
-    components: {},
-    /** Конфиг */
-    config: {
-      /** Символ компонента */
-      tagSign: ":",
-      /** Директория с компонентами */
-      componentsDirectory: "src/components",
-      /** Псевдонимы */
-      aliases: [
-        { "@root": "" },
-        { "@components": "__fast__.config.componentsDirectory" },
-        {
-          "@component":
-            "${__fast__.config.componentsDirectory}/${componentName}/assets",
-        },
-      ],
-      /** Расширение файлов компонента */
-      componentsExtension: "html",
-      /** Предзагрузка компонентов */
-      components: [],
-      /** Глобальные css правила */
-      css: "",
-    },
+    components: COMPONENTS,
+    config: CONFIG,
     init: init,
     findComponents: findComponents,
     installComponent: installComponent,
-    parseTemplate: parseTemplate,
+    parseTemplate: parseTemplate
   });
 
   /**
@@ -41,7 +43,7 @@
           return false;
         };
       this.methods = fn.methods || {};
-      this.name = fn.name || "";
+      this.name = fn.name || '';
       this.mounted =
         fn.mounted ||
         function (e) {
@@ -52,9 +54,9 @@
         function (e) {
           return false;
         };
-      this.path = fn.path || "";
+      this.path = fn.path || '';
       this.instances = fn.instances || [];
-      this.style = fn.style || "";
+      this.style = fn.style || '';
       return this;
     }
 
@@ -71,18 +73,18 @@
    */
   function init(config, $entryElem, callback) {
     $entryElem = $entryElem || document.body;
-    __fast__.config = { ...__fast__.config, ...config };
-    addStyles(__fast__.config.css + ".fast-inited {opacity: 0}");
+    CONFIG = { ...CONFIG, ...config };
+    addStyles(CONFIG.css + '.fast-inited {opacity: 0}');
 
-    $entryElem.classList.add("fast-inited");
+    $entryElem.classList.add('fast-inited');
 
-    loadComponents(__fast__.config.components, (result) => {
+    loadComponents(CONFIG.components, (result) => {
       installMultipleComponents(result);
       findComponents($entryElem, ($elem) => {
         if (callback) callback($elem);
 
         /** нужно починить */
-        setTimeout(() => $entryElem.classList.remove("fast-inited"), 500);
+        setTimeout(() => $entryElem.classList.remove('fast-inited'), 500);
       });
     });
   }
@@ -99,7 +101,7 @@
       const arr = [];
 
       if ($entryElem.tagName)
-        $entryElem.querySelectorAll("*").forEach(($elem) => {
+        selectAllNode($entryElem, '*').forEach(($elem) => {
           if (tagNameIsComponent($elem.tagName)) {
             const name = getComponentName($elem.tagName);
             if (!isInstalled(name) && !arr.includes(name)) arr.push(name);
@@ -138,7 +140,7 @@
           /** узел */
         } else {
           /** если не скрипт и не стиль */
-          if (!["SCRIPT", "STYLE"].includes($entryElem.tagName)) {
+          if (!['SCRIPT', 'STYLE'].includes($entryElem.tagName)) {
             /** продолжить поиск в глубину */
             if ($entryElem.childNodes.length) {
               $entryElem.childNodes.forEach(($elem) => {
@@ -160,8 +162,7 @@
    */
   function getComponentName(tagName) {
     return (
-      tagName[0] +
-      tagName.toLowerCase().slice(1).replace(__fast__.config.tagSign, "")
+      tagName[0] + tagName.toLowerCase().slice(1).replace(CONFIG.tagSign, '')
     );
   }
 
@@ -171,7 +172,7 @@
    * @param {String} attrName - название атрибута
    */
   function isEventAttribute(attrName) {
-    return attrName.indexOf("on") + 1 == 1 && attrName.length > 2
+    return attrName.indexOf('on') + 1 == 1 && attrName.length > 2
       ? true
       : false;
   }
@@ -182,7 +183,7 @@
    * @param {String} name — имя компонента
    */
   function tagNameIsComponent(name) {
-    return name.includes(__fast__.config.tagSign) ? true : false;
+    return name.includes(CONFIG.tagSign) ? true : false;
   }
 
   /**
@@ -195,6 +196,26 @@
     Object.keys(obj).forEach((key) => {
       callback(key, obj[key]);
     });
+  }
+
+  /**
+   * Хелпер выбора элемента. Возвращает html элемент.
+   *
+   * @param {HTMLElement} $from - где выбирать
+   * @param {String} selector - css селектор
+   */
+  function selectNode($from, selector) {
+    return $from.querySelector(selector);
+  }
+
+  /**
+   * Хелпер выбора элемента. Возвращает коллекцию элементов.
+   *
+   * @param {HTMLElement} $from - где выбирать
+   * @param {String} selector - css селектор
+   */
+  function selectAllNode($from, selector) {
+    return $from.querySelectorAll(selector);
   }
 
   /**
@@ -212,7 +233,7 @@
    * @param {String} name — имя компонента
    */
   function isInstalled(name) {
-    return __fast__.components[name] ? true : false;
+    return COMPONENTS[name] ? true : false;
   }
 
   /**
@@ -224,12 +245,11 @@
   function loadComponents(components, callback) {
     const list = [];
     const results = [];
-    const config = __fast__.config;
 
     components.forEach((componentName, i) => {
       list.push(
         fetch(
-          `${config.componentsDirectory}/${componentName}/${componentName}.${config.componentsExtension}`
+          `${CONFIG.componentsDirectory}/${componentName}/${componentName}.${CONFIG.componentsExtension}`
         )
           .then((response) => {
             return response.text();
@@ -237,7 +257,7 @@
           .then((context) => {
             results[i] = {
               context: context,
-              name: componentName,
+              name: componentName
             };
           })
       );
@@ -254,27 +274,27 @@
    */
   function parseTemplate(context, componentName) {
     const parser = new DOMParser();
-    const fragment = parser.parseFromString(context, "text/html");
+    const fragment = parser.parseFromString(context, 'text/html');
 
-    const fragmentTemplate = fragment.querySelector("template");
+    const fragmentTemplate = selectNode(fragment, 'template');
     const fragmentTemplateFirstElement = fragmentTemplate
       ? fragmentTemplate.content.children[0]
-      : "";
-    const fragmentStyle = fragment.querySelector("style");
-    const fragmentScript = fragment.querySelector("script");
+      : '';
+    const fragmentStyle = selectNode(fragment, 'style');
+    const fragmentScript = selectNode(fragment, 'script');
 
     const stringTemplate = fragmentTemplateFirstElement
       ? fragmentTemplateFirstElement.outerHTML
-      : "";
-    const stringStyle = fragmentStyle ? fragmentStyle.textContent : "";
+      : '';
+    const stringStyle = fragmentStyle ? fragmentStyle.textContent : '';
     const stringScript = fragmentScript
-      ? fragment.querySelector("script").textContent
-      : "";
+      ? selectNode(fragment, 'script').textContent
+      : '';
 
     return {
       stringTemplate: cookTemplate(stringTemplate, componentName),
       stringScript: cookScript(stringScript, componentName),
-      stringStyle: cookStyle(stringStyle, componentName),
+      stringStyle: cookStyle(stringStyle, componentName)
     };
   }
 
@@ -300,7 +320,7 @@
     );
 
     fragment = fragment.replace(/(\${.+\})/gi, (e, i) => {
-      return i.replaceAll("&gt;", ">").replaceAll("&lt;", "<");
+      return i.replaceAll('&gt;', '>').replaceAll('&lt;', '<');
     });
 
     return fragment;
@@ -315,7 +335,7 @@
   function cookStyle(fragment, componentName) {
     fragment = replaceAlias(fragment, componentName);
 
-    fragment = fragment.trim().replace(/ +(?= )/g, "");
+    fragment = fragment.trim().replace(/ +(?= )/g, '');
 
     return fragment;
   }
@@ -328,7 +348,7 @@
    */
   function cookScript(fragment, componentName) {
     fragment = fragment.trim();
-    fragment = fragment.length ? fragment : "({})";
+    fragment = fragment.length ? fragment : '({})';
     fragment = replaceAlias(fragment, componentName);
 
     return fragment;
@@ -341,9 +361,9 @@
    * @param {String} componentName - имя компонента
    */
   function replaceAlias(string, componentName) {
-    __fast__.config.aliases.forEach((e) => {
+    CONFIG.aliases.forEach((e) => {
       const name = Object.keys(e)[0];
-      const value = new Function("componentName", `return \`${e[name]}\``)(
+      const value = new Function('componentName', `return \`${e[name]}\``)(
         componentName
       );
 
@@ -358,16 +378,16 @@
    * @param {String} cssRules - строка с css
    */
   function addStyles(cssRules) {
-    let fastStyles = document.getElementById("fast-styles");
+    let fastStyles = document.getElementById('fast-styles');
     if (!fastStyles) {
-      fastStyles = document.createElement("style");
-      fastStyles.setAttribute("id", "fast-styles");
+      fastStyles = document.createElement('style');
+      fastStyles.setAttribute('id', 'fast-styles');
       document.head.append(fastStyles);
     }
 
     if (Sass) {
       Sass.compile(cssRules, (result) => {
-        fastStyles.textContent += result.text ? `${result.text}\n` : "";
+        fastStyles.textContent += result.text ? `${result.text}\n` : '';
       });
     } else {
       fastStyles.textContent += `${cssRules}\n`;
@@ -391,7 +411,7 @@
   }
 
   /**
-   * Инсталировать компонент в `__fast__.components[componentName]`.
+   * Инсталировать компонент в `COMPONENTS[componentName]`.
    *
    * @param {String} context - строка, содержимое файла компонента
    * @param {String} componentName - название компонента
@@ -410,14 +430,14 @@
       const props = js.props || [];
 
       /** Интерполяция методов компонента */
-      let fnsName = "";
+      let fnsName = '';
       const fns = (function (methods) {
         return Object.keys(methods)
           .map(function (f) {
             fnsName += `${f}:${f},`;
             return `const ${f} = ${methods[f]};\n`;
           })
-          .join("");
+          .join('');
       })(methods);
 
       /** Пропсы компонента */
@@ -426,16 +446,16 @@
           .map(function (v) {
             return `const ${v} = (props.${v} && props.${v}.value) ? props.${v}.value : undefined;\n`;
           })
-          .join("");
+          .join('');
       })(props);
 
       return new Function(
-        "props",
+        'props',
         `${vars}${fns} return {methods:{${fnsName}},template:\`${stringTemplate}\`}`
       );
     })(js, stringTemplate);
 
-    const component = (__fast__.components[componentName] = new Component({
+    const component = (COMPONENTS[componentName] = new Component({
       /** {String} Имя компонента */
       name: componentName,
       /** {Function} Шаблон */
@@ -453,7 +473,7 @@
       /** {array} экземпляры */
       instances: [],
       /** {String} путь к компоненту */
-      path: `${__fast__.config.componentsDirectory}/${componentName}/`,
+      path: `${CONFIG.componentsDirectory}/${componentName}/`
     }));
 
     addStyles(stringStyle);
@@ -476,13 +496,13 @@
    */
   function renderComponent($elem, componentName, callback) {
     //try {
-    const component = __fast__.components[componentName];
+    const component = COMPONENTS[componentName];
     const entryChilds = $elem.childNodes;
-    const entrySlots = $elem.querySelectorAll("slot");
+    const entrySlots = selectAllNode($elem, 'slot');
     const entryMethods = (($elem) => {
       const methods = {};
       forEachObject($elem, (key, value) => {
-        if (key.includes("$")) methods[key] = value;
+        if (key.includes('$')) methods[key] = value;
       });
       return methods;
     })($elem);
@@ -506,7 +526,7 @@
 
       return {
         props: props,
-        attributes: attributes,
+        attributes: attributes
       };
     })($elem, component);
 
@@ -518,14 +538,14 @@
 
       const $template = parser.parseFromString(
         newInstance.template,
-        "text/html"
+        'text/html'
       ).body;
 
       const $instance = $template.children[0];
 
       findComponents($instance);
 
-      const $elems = $template.querySelectorAll("*");
+      const $elems = selectAllNode($template, '*');
 
       /** Создание обработчиков событий */
       $elems.forEach(($element) => {
@@ -562,9 +582,9 @@
     });
 
     $componentInstance.__created({
-      component: __fast__.components[componentName],
+      component: COMPONENTS[componentName],
       instance: $componentInstance,
-      props: props,
+      props: props
     });
 
     //установить простые атрибуты для узла
@@ -586,17 +606,17 @@
       }
     });
 
-    const newElemSlots = $componentInstance.querySelectorAll("slot");
+    const newElemSlots = selectAllNode($componentInstance, 'slot');
 
     //перенести дочернии узлы в слоты
     if (entryChilds.length && newElemSlots.length) {
       //если нужно по слотам
       if (entrySlots.length) {
         for (let outSlot of entrySlots) {
-          const outSlotName = outSlot.getAttribute("name");
+          const outSlotName = outSlot.getAttribute('name');
 
           for (let inSlot of newElemSlots) {
-            const inSlotName = inSlot.getAttribute("name");
+            const inSlotName = inSlot.getAttribute('name');
             if (outSlotName == inSlotName) slotToSlot(outSlot, inSlot);
           }
         }
@@ -608,11 +628,11 @@
     }
 
     $elem.parentElement.replaceChild($componentInstance, $elem);
-    __fast__.components[componentName].instances.push($componentInstance);
+    COMPONENTS[componentName].instances.push($componentInstance);
     $componentInstance.__mounted({
-      component: __fast__.components[componentName],
+      component: COMPONENTS[componentName],
       instance: $componentInstance,
-      props: props,
+      props: props
     });
 
     if (callback) callback($componentInstance);
