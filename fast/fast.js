@@ -5,6 +5,8 @@
     tagSign: ':',
     /** Директория с компонентами */
     componentsDirectory: 'src/components',
+    /** Данные которые можно использовать из компонента */
+    dataset: {},
     /** Псевдонимы */
     aliases: [
       { '@root': '' },
@@ -161,9 +163,7 @@
    * @param {String} tagName — название тега
    */
   function getComponentName(tagName) {
-    return (
-      tagName[0] + tagName.toLowerCase().slice(1).replace(CONFIG.tagSign, '')
-    );
+    return tagName[0] + tagName.toLowerCase().slice(1).replace(CONFIG.tagSign, '');
   }
 
   /**
@@ -442,6 +442,8 @@
           .join('');
       })(methods);
 
+      const dataset = `const dataset = __fast__.config.dataset;\n`;
+
       /** Пропсы компонента */
       const vars = (function (props) {
         return Object.keys(props)
@@ -453,7 +455,7 @@
 
       return new Function(
         'props',
-        `${vars}${fns} return {methods:{${fnsName}},template:\`${stringTemplate}\`}`
+        `${dataset}${vars}${fns} return {methods:{${fnsName}},template:\`${stringTemplate}\`}`
       );
     })(js, stringTemplate);
 
