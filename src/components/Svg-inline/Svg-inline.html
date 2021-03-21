@@ -1,0 +1,61 @@
+<template>
+    <div class="svg-inline"></div>
+</template>
+
+<script>
+    ({
+        props: {
+            url:{
+                type: String
+            }
+        },
+        created: function(e){
+            window.__svg__ = window.__svg__ || {};
+            const url = e.props.url.value;
+            const $instance = e.instance;
+
+            window.__svg__[url] = window.__svg__[url] || svg('');
+            window.__svg__[url].instance.push($instance);
+
+            if (window.__svg__[url].template.length) {
+                
+                $instance.innerHTML = __svg__[url].template;
+            } else {
+                window.__svg__[url].template = ' ';
+                fetch(url)
+                .then(function (response) {
+                    return response.text();
+                })
+                .then(function (context) {
+                    if (context.includes('<svg')) {
+                        window.__svg__[url].template = context;
+                        $instance.innerHTML = context;
+                    }    
+                });
+            }
+
+            //console.log(window.__svg__[url], url)
+
+            function svg(template) {
+                return {
+                    str: template,
+                    instance: [],
+                    get template() {
+                        return this.str;
+                    },
+                    set template(value) {
+                        this.str = value;           
+                        this.instance.forEach((e) => {   
+                            e.innerHTML = this.template;
+                        });
+
+                    }
+                }
+            }
+        }
+    })
+</script>
+
+<style>
+
+</style>

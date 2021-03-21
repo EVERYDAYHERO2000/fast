@@ -1,37 +1,37 @@
 (() => {
   const COMPONENTS = {};
-  let CONFIG = {
-    /** Символ компонента */
-    tagSign: ':',
-    /** Директория с компонентами */
-    componentsDirectory: 'src/components',
-    /** Данные которые можно использовать из компонента */
-    dataset: {},
-    /** Псевдонимы */
-    aliases: [
-      { '@root': '' },
-      { '@components': '__fast__.config.componentsDirectory' },
-      {
-        '@component':
-          '${__fast__.config.componentsDirectory}/${componentName}/assets'
-      }
-    ],
-    /** Расширение файлов компонента */
-    componentsExtension: 'html',
-    /** Предзагрузка компонентов */
-    components: [],
-    /** Глобальные css правила */
-    css: ''
-  };
-
   const __fast__ = (window.__fast__ = {
     components: COMPONENTS,
-    config: CONFIG,
+    config: {
+      /** Символ компонента */
+      tagSign: ':',
+      /** Директория с компонентами */
+      componentsDirectory: 'src/components',
+      /** Данные которые можно использовать из компонента */
+      dataset: {},
+      /** Псевдонимы */
+      aliases: [
+        { '@root': '' },
+        { '@components': '__fast__.config.componentsDirectory' },
+        {
+          '@component':
+            '${__fast__.config.componentsDirectory}/${componentName}/assets'
+        }
+      ],
+      /** Расширение файлов компонента */
+      componentsExtension: 'html',
+      /** Предзагрузка компонентов */
+      components: [],
+      /** Глобальные css правила */
+      css: ''
+    },
     init: init,
     findComponents: findComponents,
     installComponent: installComponent,
     parseTemplate: parseTemplate
   });
+
+  let CONFIG = __fast__.config;
 
   /**
    * Класс компонента
@@ -76,11 +76,14 @@
   function init(config, $entryElem, callback) {
     $entryElem = $entryElem || document.body;
     __fast__.config = { ...CONFIG, ...config };
-    addStyles(__fast__.config.css + '.fast-inited {opacity: 0;}');
+    CONFIG = __fast__.config;
+
+    addStyles(CONFIG.css + '.fast-inited {opacity: 0;}');
 
     $entryElem.classList.add('fast-inited');
 
     loadComponents(CONFIG.components, (result) => {
+
       installMultipleComponents(result);
       findComponents($entryElem, ($elem) => {
         if (callback) callback($elem);
@@ -134,10 +137,11 @@
         if (tagNameIsComponent(tagName)) {
           const name = getComponentName(tagName);
 
+
           /** если установлен */
           if (isInstalled(name)) {
             renderComponent($entryElem, name);
-          }
+          } 
 
           /** узел */
         } else {

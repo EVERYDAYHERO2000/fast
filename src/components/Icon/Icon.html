@@ -1,5 +1,7 @@
 <template>
-    <div class="icon"></div>
+    <div class="icon">
+        <svg-inline: url="@component/${name}.svg"></svg-inline:>
+    </div>
 </template>
 
 <script>
@@ -8,15 +10,6 @@
             name: {
                 type: String
             }
-        },
-        created: function(e){
-            fetch(`${e.component.path}assets/${e.props.name.value}.svg`)
-            .then(function (response) {
-                return response.text();
-            })
-            .then(function (context) {
-                if (context.includes('<svg')) e.instance.innerHTML = context;
-            });
         }
     })
 </script>
