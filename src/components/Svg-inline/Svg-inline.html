@@ -46,7 +46,7 @@
                     set template(value) {
                         this.str = value;           
                         this.instance.forEach((e) => {   
-                            e.innerHTML = this.template;
+                            if (e.innerHTML.length < 2) e.innerHTML = this.template;
                         });
 
                     }
