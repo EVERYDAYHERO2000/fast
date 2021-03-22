@@ -1,7 +1,15 @@
 <template>
-    <div class="input">
-        <div class="imput__inner">
-            <span class="input__static">${static}</span><input id="${id}" type="text" value="${value}" />
+    <div 
+        class="input"
+        ${(width) ? `style="width:${width}px;"` : ''}>
+        <div class="input__inner">
+            ${(static) ? `<span class="input__static">${static}</span>`: ''}
+            <input 
+                ${(id) ? `id="${id}"` : ''}
+                onfocus="${setFocus}" 
+                onblur="${setBlur}"
+                type="${type}" 
+                value="${value}" />
         </div>
     </div>
 </template>
@@ -21,6 +29,21 @@
             },
             autofocus: {
                 type: Boolean
+            },
+            type: {
+                type: String,
+                default: 'text'
+            },
+            width: {
+                type: Number
+            }
+        },
+        methods: {
+            setFocus: function(e,el) {
+                el.parentElement.parentElement.classList.add('input_focused');
+            },
+            setBlur: function(e,el) {   
+                el.parentElement.parentElement.classList.remove('input_focused');
             }
         }
     })
@@ -36,11 +59,11 @@
         font-size: 16px;
     }
 
-    .input_focus {
+    .input_focused {
         border: 1px solid #6851ff;
     }
 
-    .imput__inner {
+    .input__inner {
         display: flex;
         align-items: center;
         width: 100%;

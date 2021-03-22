@@ -287,23 +287,13 @@
    * @param {String} componentName - имя компонента
    */
   function parseTemplate(context, componentName) {
-    const parser = new DOMParser();
-    const fragment = parser.parseFromString(context, 'text/html');
+    context = context.replace(/\s+/gi, ' ');
 
-    const fragmentTemplate = selectNode(fragment, 'template');
-    const fragmentTemplateFirstElement = fragmentTemplate
-      ? fragmentTemplate.content.children[0]
-      : '';
-    const fragmentStyle = selectNode(fragment, 'style');
-    const fragmentScript = selectNode(fragment, 'script');
+    let stringTemplate, stringScript, stringStyle;
 
-    const stringTemplate = fragmentTemplateFirstElement
-      ? fragmentTemplateFirstElement.outerHTML
-      : '';
-    const stringStyle = fragmentStyle ? fragmentStyle.textContent : '';
-    const stringScript = fragmentScript
-      ? selectNode(fragment, 'script').textContent
-      : '';
+    context.replace(/<template>(.*?)<\/template>/gi, (a,b) => stringTemplate = b)
+      .replace(/<script>(.*?)<\/script>/gi, (a,b) => stringScript = b)
+      .replace(/<style>(.*?)<\/style>/gi, (a,b) => stringStyle = b);
 
     return {
       stringTemplate: cookTemplate(stringTemplate, componentName),
@@ -567,25 +557,27 @@
 
       const $elems = selectAllNode($template, '*');
 
+
       /** Создание обработчиков событий */
       $elems.forEach(($element) => {
-        for (let attr of $element.attributes) {
-          if (isEventAttribute(attr.name)) {
-            const attrName = attr.name;
-            const eventType = attrName.slice(2);
-            const attrValue = attr.nodeValue;
+        
+        $element.outerHTML.split(/>\s+</)[0].replace(/\s+(.*?)=['"]+(.*?)['"]/gi, function(a,b,c){
+          if (isEventAttribute(b)) {
+            const attrName = b;
+            const eventType = b.slice(2);
+            const attrValue = c;
             const eventFunctionName = `$${attrValue}`;
-
+            
             $element[eventFunctionName] = newInstance.methods[attrValue];
 
             $element.addEventListener(eventType, (event) => {
               $element[eventFunctionName](event, $element);
             });
 
-            if (!tagNameIsComponent($element.tagName))
-              $element.removeAttribute(attrName);
-          }
-        }
+            if (!tagNameIsComponent($element.tagName)) $element.removeAttribute(attrName);
+          }  
+        });
+
       });
 
       /** Экземпляр компонента */

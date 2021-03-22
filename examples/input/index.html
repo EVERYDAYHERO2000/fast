@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html>
     <head>
-        
     </head>
     <body>
-        <Input: static="https://mysite.com/" id="test" ></Input:>
+        <div class="story">
+            <div class="description">Простой инпут с заданой шириной</div>
+            <Input: width="250" ></Input:>
+        </div>
+        <div class="story">
+            <div class="description">Инпут с нестираемой частью</div>
+            <Input: static="https://mysite.com/" ></Input:>
+        </div>    
 
-        <script src="../../dist/fast.min.js"></script>
+        <script src="../../src/fast.js"></script>
         <script>
             __fast__.init(
                 {
                     components: [],
-                    css: ``
+                    css: `body {font-family:sans-serif;} .story {margin: 48px 0;} .description {margin: 24px 0;}`
                 }
             );
         </script>
