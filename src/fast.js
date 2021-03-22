@@ -286,7 +286,7 @@
    * @param {String} context - строчное представление файла компонента
    * @param {String} componentName - имя компонента
    */
-  function parseTemplate(context, componentName) {
+  function parseTemplate(context, componentName) { 
     context = context.replace(/\s+/gi, ' ');
 
     let stringTemplate, stringScript, stringStyle;
@@ -371,6 +371,7 @@
         componentName
       );
 
+      
       string = string.replaceAll(name, value);
     });
     return string;

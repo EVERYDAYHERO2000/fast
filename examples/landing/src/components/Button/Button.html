@@ -24,31 +24,31 @@
         methods: {
             
             setType: function(type){
-                let t = ''
+                let t = '';
 
                 switch (type) {
                     case 'tool':
-                        t = 'button_type_tool'
+                        t = 'button_type_tool';
                         break;
                     case 'gdu':
-                        t = 'button_type_gdu'
+                        t = 'button_type_gdu';
                         break;     
                 }
 
                 return t;
             },
             setIcon: function(icon){
-                return (icon == undefined) ? 'display:none' : ''
+                return (icon == undefined) ? 'display:none' : '';
             },
             setSize: function(size){
-                return (size) ? `button_size_${size}` : ''
+                return (size) ? `button_size_${size}` : '';
             }
         }
 
     })
 </script>
 
-<style type="text/scss">
+<style>
    .button {
        border: none;
        appearance: none;
