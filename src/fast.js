@@ -291,9 +291,9 @@
 
     let stringTemplate, stringScript, stringStyle;
 
-    context.replace(/<template>(.*?)<\/template>/gi, (a,b) => stringTemplate = b)
-      .replace(/<script>(.*?)<\/script>/gi, (a,b) => stringScript = b)
-      .replace(/<style>(.*?)<\/style>/gi, (a,b) => stringStyle = b);
+    context.replace(/<template.*?>(.*?)<\/template>/gi, (a,b) => stringTemplate = b)
+      .replace(/<script.*?>(.*?)<\/script>/gi, (a,b) => stringScript = b)
+      .replace(/<style.*?>(.*?)<\/style>/gi, (a,b) => stringStyle = b);
 
     return {
       stringTemplate: cookTemplate(stringTemplate, componentName),
@@ -432,15 +432,15 @@
 
     const js = new Function(`return ${stringScript}`)();
 
-    const template = (function (js, stringTemplate) {
+    const template = ((js, stringTemplate) => {
       const methods = js.methods || [];
       const props = js.props || [];
 
       /** Интерполяция методов компонента */
       let fnsName = '';
-      const fns = (function (methods) {
+      const fns = ((methods) => {
         return Object.keys(methods)
-          .map(function (f) {
+          .map((f) => {
             fnsName += `${f}:${f},`;
             return `const ${f} = ${methods[f]};\n`;
           })
@@ -452,9 +452,9 @@
       const cp = `const checkProp = __fast__.checkProp;\n`;
 
       /** Пропсы компонента */
-      const vars = (function (props) {
+      const vars = ((props) => {
         return Object.keys(props)
-          .map(function (v) {
+          .map((v) => {
             return `const ${v} = checkProp(props.${v});\n`;
           })
           .join('');
@@ -562,7 +562,7 @@
       /** Создание обработчиков событий */
       $elems.forEach(($element) => {
         
-        $element.outerHTML.split(/>\s+</)[0].replace(/\s+(.*?)=['"]+(.*?)['"]/gi, function(a,b,c){
+        $element.outerHTML.split(/>\s+</)[0].replace(/\s+(.*?)=['"]+(.*?)['"]/gi, (a,b,c) => {
           if (isEventAttribute(b)) {
             const attrName = b;
             const eventType = b.slice(2);
