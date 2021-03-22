@@ -390,7 +390,7 @@
     }
 
 
-    if (Sass) {
+    if (window.Sass) {
       Sass.compile(cssRules, (result) => {
         $fastStyles.textContent += result.text ? `${result.text}\n` : '';
       });
