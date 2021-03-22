@@ -227,8 +227,17 @@
    *
    * @param {Object} obj - клонируемый объект
    */
-  function cloneObject(obj) {
-    return JSON.parse(JSON.stringify(obj));
+  function clonePropObject(obj) {
+    let newObj = {};
+    forEachObject(obj, (key, value)=>{
+      
+      newObj[key] = {
+        type: value.type.name,
+        default: (typeof value.default != 'undefined') ?  value.default : null
+      }
+    })
+
+    return newObj;
   }
 
   /**
@@ -448,18 +457,20 @@
 
       const dataset = `const dataset = __fast__.config.dataset;\n`;
 
+      const cp = `const checkProp = ${checkProp.toString()};\n`;
+
       /** Пропсы компонента */
       const vars = (function (props) {
         return Object.keys(props)
           .map(function (v) {
-            return `const ${v} = (props.${v} && props.${v}.value) ? props.${v}.value : undefined;\n`;
+            return `const ${v} = checkProp(props.${v});\n`;
           })
           .join('');
       })(props);
 
       return new Function(
         'props',
-        `${dataset}${vars}${fns} return {methods:{${fnsName}},template:\`${stringTemplate}\`}`
+        `${cp}${dataset}${vars}${fns} return {methods:{${fnsName}},template:\`${stringTemplate}\`}`
       );
     })(js, stringTemplate);
 
@@ -516,7 +527,7 @@
     })($elem);
 
     const { props, attributes } = (($elem, component) => {
-      const props = cloneObject(component.props);
+      const props = clonePropObject(component.props);
       const attributes = {};
 
       forEachObject($elem.attributes, (attrKey, attribute) => {
@@ -663,6 +674,29 @@
     inSlot.parentElement.replaceChild(outSlot, inSlot);
   }
 
+  function checkProp(prop) {
+    let propValue = prop.value;
+    const propType = prop.type;
+    const propDefault = prop.default;
+
+    if (prop.type.name == 'String') {
+
+    } else if (propType == 'Number') {
+      propValue = +propValue;
+
+    } else if (propType == 'Object') {
+      propType = JSON.parse(propType);
+
+    } else if (propType == 'Array') {
+      propType = JSON.parse(propType);
+
+    }
+
+    propValue = (typeof propDefault != 'undefined' && !propValue) ? propDefault : propValue; 
+
+    return propValue;
+    
+  }
   
 
 })();

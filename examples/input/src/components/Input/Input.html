@@ -1,15 +1,64 @@
 <template>
-    <div class="input">
-        <input type="text" />
-    </div>
+    <label class="input" for="${id}">sd
+        <div class="imput__inner">
+            <span class="input__static">${static}</span><input id="${id}" type="text" value="${value}" />
+        </div>
+    </label>
 </template>
 
 <script>
-    ({})
+    ({
+        props: {
+            static : {
+                type: String
+            },
+            value : {
+                type: String,
+                default: ''
+            },
+            id : {
+                type: String
+            }
+        }
+    })
 </script>
 
 <style>
     .input {
-        
+        display: flex;
+        align-items: center;
+        border: 1px solid #e2e5ec;
+        border-radius: 8px;
+        font-family: sans-serif;
+        font-size: 16px;
+    }
+
+    .input_focus {
+        border: 1px solid #6851ff;
+    }
+
+    .imput__inner {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0px 8px;
+        box-sizing: border-box;
+    }
+
+    .input__static {
+        color: #808999;
+    }
+
+    .input input {
+        border:none;
+        flex-grow: 1;
+        display: block;
+        padding: 8px 0;
+        appearance: none;
+        font-size: 16px;
+    }
+
+    .input input:focus {
+        outline:none;
     }
 </style>
