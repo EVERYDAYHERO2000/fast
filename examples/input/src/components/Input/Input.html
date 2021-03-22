@@ -1,9 +1,9 @@
 <template>
-    <label class="input" for="${id}">sd
+    <div class="input">
         <div class="imput__inner">
             <span class="input__static">${static}</span><input id="${id}" type="text" value="${value}" />
         </div>
-    </label>
+    </div>
 </template>
 
 <script>
@@ -18,6 +18,9 @@
             },
             id : {
                 type: String
+            },
+            autofocus: {
+                type: Boolean
             }
         }
     })

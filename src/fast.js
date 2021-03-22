@@ -28,7 +28,8 @@
     init: init,
     findComponents: findComponents,
     installComponent: installComponent,
-    parseTemplate: parseTemplate
+    parseTemplate: parseTemplate,
+    checkProp: checkProp
   });
 
   let CONFIG = __fast__.config;
@@ -457,7 +458,7 @@
 
       const dataset = `const dataset = __fast__.config.dataset;\n`;
 
-      const cp = `const checkProp = ${checkProp.toString()};\n`;
+      const cp = `const checkProp = __fast__.checkProp;\n`;
 
       /** Пропсы компонента */
       const vars = (function (props) {
@@ -685,11 +686,13 @@
       propValue = +propValue;
 
     } else if (propType == 'Object') {
-      propType = JSON.parse(propType);
+      propValue = JSON.parse(propType);
 
     } else if (propType == 'Array') {
-      propType = JSON.parse(propType);
+      propValue = JSON.parse(propType);
 
+    } else if (propType == 'Boolean') {
+      propValue = (propValue == 'true') ? true : false;
     }
 
     propValue = (typeof propDefault != 'undefined' && !propValue) ? propDefault : propValue; 
