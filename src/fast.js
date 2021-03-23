@@ -63,8 +63,16 @@
       return this;
     }
 
-    create(props) {
-      return this.template(props);
+    render(props) {
+      const newInstance = this.template(props);
+      const $conteiner = document.createElement('div');
+      $conteiner.innerHTML = newInstance.template;
+
+      const $instance = $conteiner.children[0];
+      return {
+        instance : $instance,
+        methods : newInstance.methods  
+      }
     }
   }
 
@@ -145,7 +153,7 @@
           /** узел */
         } else {
           /** если не скрипт и не стиль */
-          if (!['SCRIPT', 'STYLE'].includes($entryElem.tagName)) {
+          if (!['SCRIPT', 'STYLE', 'TEMPLATE'].includes($entryElem.tagName)) {
             /** продолжить поиск в глубину */
             if ($entryElem.childNodes.length) {
               $entryElem.childNodes.forEach(($elem) => {
@@ -424,7 +432,7 @@
    * @param {String} componentName - название компонента
    */
   function installComponent(context, componentName, callback) {
-    //try {
+
     const { stringTemplate, stringScript, stringStyle } = parseTemplate(
       context,
       componentName
@@ -492,11 +500,7 @@
     if (callback) callback(component);
 
     return component;
-    /*  
-    } catch (err) {
-      console.error(`Component <${componentName}> not found and can't be installed. Check component file directory.`);
-    }
-    */
+
   }
 
   /**
@@ -506,7 +510,7 @@
    * @param {String} componentName - название компонента
    */
   function renderComponent($elem, componentName, callback) {
-    //try {
+
     const component = COMPONENTS[componentName];
     const entryChilds = $elem.childNodes;
     const entrySlots = selectAllNode($elem, 'slot');
@@ -542,21 +546,13 @@
     })($elem, component);
 
     /** Создание компонента из шаблона по пропсам */
-    const $componentInstance = ((props) => {
-      const parser = new DOMParser();
+    const $componentInstance = ((component, props) => {
 
-      const newInstance = component.create(props);
+      const newInstance = component.render(props);
+      
+      findComponents(newInstance.instance);
 
-      const $template = parser.parseFromString(
-        newInstance.template,
-        'text/html'
-      ).body;
-
-      const $instance = $template.children[0];
-
-      findComponents($instance);
-
-      const $elems = selectAllNode($template, '*');
+      const $elems = selectAllNode(newInstance.instance, '*');
 
       /** Создание обработчиков событий */
       $elems.forEach(($element) => {
@@ -582,13 +578,13 @@
       });
 
       /** Экземпляр компонента */
-      $instance.__props = props;
-      $instance.__created = component.created;
-      $instance.__mounted = component.mounted;
-      $instance.__methods = newInstance.methods;
+      newInstance.instance.__props = props;
+      newInstance.instance.__created = component.created;
+      newInstance.instance.__mounted = component.mounted;
+      newInstance.instance.__methods = newInstance.methods;
 
-      return $instance;
-    })(props);
+      return newInstance.instance;
+    })(component, props);
 
     forEachObject(entryMethods, (name, method) => {
       $componentInstance[name] = method;
@@ -651,11 +647,7 @@
     if (callback) callback($componentInstance);
 
     return $componentInstance;
-    /*  
-    } catch (err) {
-      console.error(`Component <${componentName}> can't be rendered.`);
-    }
-    */
+
   }
 
   /**
