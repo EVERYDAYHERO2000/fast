@@ -1,6 +1,6 @@
 (() => {
   const COMPONENTS = {};
-  const __fast__ = (window.__fast__ = {
+  const Fast = (window.Fast = {
     components: COMPONENTS,
     config: {
       /** Символ компонента */
@@ -12,9 +12,9 @@
       /** Псевдонимы */
       aliases: [
         { '@root': '' },
-        { '@components': '__fast__.config.componentsDirectory' },
+        { '@components': 'Fast.config.componentsDirectory' },
         {
-          '@component': '${__fast__.config.componentsDirectory}/${componentName}/assets'
+          '@component': '${Fast.config.componentsDirectory}/${componentName}/assets'
         }
       ],
       /** Расширение файлов компонента */
@@ -31,7 +31,7 @@
     checkProp: checkProp
   });
 
-  let CONFIG = __fast__.config;
+  let CONFIG = Fast.config;
 
   /**
    * Класс компонента
@@ -76,15 +76,15 @@
   }
 
   /**
-   * Инициализация `__fast__`.
+   * Инициализация `Fast`.
    * @param {Object} config - конфиг
    * @param {NodeList} $entryElem - узел, точка входа
    * @param {Function} callback - колбек
    */
   function init(config, $entryElem, callback) {
     $entryElem = $entryElem || document.body;
-    __fast__.config = { ...CONFIG, ...config };
-    CONFIG = __fast__.config;
+    Fast.config = { ...CONFIG, ...config };
+    CONFIG = Fast.config;
 
     addStyles(CONFIG.css + '.fast-inited {opacity: 0;}');
 
@@ -366,9 +366,9 @@
           .join('');
       })(methods);
 
-      const dataset = `const dataset = __fast__.config.dataset;\n`;
+      const dataset = `const dataset = Fast.config.dataset;\n`;
 
-      const cp = `const checkProp = __fast__.checkProp;\n`;
+      const cp = `const checkProp = Fast.checkProp;\n`;
 
       /** Пропсы компонента */
       const vars = ((props) => {
@@ -497,15 +497,18 @@
       return newInstance.instance;
     })(component, props);
 
+    const callbackObject = {
+      component: COMPONENTS[componentName],
+      instance: $componentInstance,
+      props: props,
+      childs: entryChilds
+    }
+
     forEachObject(entryMethods, (name, method) => {
       $componentInstance[name] = method;
     });
 
-    $componentInstance.__created({
-      component: COMPONENTS[componentName],
-      instance: $componentInstance,
-      props: props
-    });
+    $componentInstance.__created(callbackObject);
 
     //установить простые атрибуты для узла
     forEachObject(attributes, (name, value) => {
@@ -549,11 +552,7 @@
 
     $elem.parentElement.replaceChild($componentInstance, $elem);
     COMPONENTS[componentName].instances.push($componentInstance);
-    $componentInstance.__mounted({
-      component: COMPONENTS[componentName],
-      instance: $componentInstance,
-      props: props
-    });
+    $componentInstance.__mounted(callbackObject);
 
     if (callback) callback($componentInstance);
 
