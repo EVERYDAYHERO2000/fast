@@ -84,7 +84,6 @@
     $entryElem.classList.add('fast-inited');
 
     loadComponents(CONFIG.components, (result) => {
-
       installMultipleComponents(result);
       findComponents($entryElem, ($elem) => {
         if (callback) callback($elem);
@@ -138,11 +137,10 @@
         if (tagNameIsComponent(tagName)) {
           const name = getComponentName(tagName);
 
-
           /** если установлен */
           if (isInstalled(name)) {
             renderComponent($entryElem, name);
-          } 
+          }
 
           /** узел */
         } else {
@@ -168,7 +166,9 @@
    * @param {String} tagName — название тега
    */
   function getComponentName(tagName) {
-    return tagName[0] + tagName.toLowerCase().slice(1).replace(CONFIG.tagSign, '');
+    return (
+      tagName[0] + tagName.toLowerCase().slice(1).replace(CONFIG.tagSign, '')
+    );
   }
 
   /**
@@ -230,13 +230,12 @@
    */
   function clonePropObject(obj) {
     let newObj = {};
-    forEachObject(obj, (key, value)=>{
-      
+    forEachObject(obj, (key, value) => {
       newObj[key] = {
         type: value.type.name,
-        default: (typeof value.default != 'undefined') ?  value.default : null
-      }
-    })
+        default: typeof value.default != 'undefined' ? value.default : null
+      };
+    });
 
     return newObj;
   }
@@ -286,14 +285,18 @@
    * @param {String} context - строчное представление файла компонента
    * @param {String} componentName - имя компонента
    */
-  function parseTemplate(context, componentName) { 
+  function parseTemplate(context, componentName) {
     context = context.replace(/\s+/gi, ' ');
 
     let stringTemplate, stringScript, stringStyle;
 
-    context.replace(/<template.*?>(.*?)<\/template>/gi, (a,b) => stringTemplate = b)
-      .replace(/<script.*?>(.*?)<\/script>/gi, (a,b) => stringScript = b)
-      .replace(/<style.*?>(.*?)<\/style>/gi, (a,b) => stringStyle = b);
+    context
+      .replace(
+        /<template.*?>(.*?)<\/template>/gi,
+        (a, b) => (stringTemplate = b)
+      )
+      .replace(/<script.*?>(.*?)<\/script>/gi, (a, b) => (stringScript = b))
+      .replace(/<style.*?>(.*?)<\/style>/gi, (a, b) => (stringStyle = b));
 
     return {
       stringTemplate: cookTemplate(stringTemplate, componentName),
@@ -371,7 +374,6 @@
         componentName
       );
 
-      
       string = string.replaceAll(name, value);
     });
     return string;
@@ -383,13 +385,12 @@
    * @param {String} cssRules - строка с css
    */
   function addStyles(cssRules) {
-    let $fastStyles = selectNode(document,'#fast-styles');
+    let $fastStyles = selectNode(document, '#fast-styles');
     if (!$fastStyles) {
       $fastStyles = document.createElement('style');
       $fastStyles.setAttribute('id', 'fast-styles');
       document.head.append($fastStyles);
     }
-
 
     if (window.Sass) {
       Sass.compile(cssRules, (result) => {
@@ -401,7 +402,6 @@
 
     return $fastStyles.textContent;
   }
-
 
   /**
    * Установка нескольких компонентов.
@@ -558,27 +558,27 @@
 
       const $elems = selectAllNode($template, '*');
 
-
       /** Создание обработчиков событий */
       $elems.forEach(($element) => {
-        
-        $element.outerHTML.split(/>\s+</)[0].replace(/\s+(.*?)=['"]+(.*?)['"]/gi, (a,b,c) => {
-          if (isEventAttribute(b)) {
-            const attrName = b;
-            const eventType = b.slice(2);
-            const attrValue = c;
-            const eventFunctionName = `$${attrValue}`;
-            
-            $element[eventFunctionName] = newInstance.methods[attrValue];
+        $element.outerHTML
+          .split(/>\s+</)[0]
+          .replace(/\s+(.*?)=['"]+(.*?)['"]/gi, (a, b, c) => {
+            if (isEventAttribute(b)) {
+              const attrName = b;
+              const eventType = b.slice(2);
+              const attrValue = c;
+              const eventFunctionName = `$${attrValue}`;
 
-            $element.addEventListener(eventType, (event) => {
-              $element[eventFunctionName](event, $element);
-            });
+              $element[eventFunctionName] = newInstance.methods[attrValue];
 
-            if (!tagNameIsComponent($element.tagName)) $element.removeAttribute(attrName);
-          }  
-        });
+              $element.addEventListener(eventType, (event) => {
+                $element[eventFunctionName](event, $element);
+              });
 
+              if (!tagNameIsComponent($element.tagName))
+                $element.removeAttribute(attrName);
+            }
+          });
       });
 
       /** Экземпляр компонента */
@@ -674,25 +674,19 @@
     const propDefault = prop.default;
 
     if (prop.type.name == 'String') {
-
     } else if (propType == 'Number') {
       propValue = +propValue;
-
     } else if (propType == 'Object') {
       propValue = JSON.parse(propType);
-
     } else if (propType == 'Array') {
       propValue = JSON.parse(propType);
-
     } else if (propType == 'Boolean') {
-      propValue = (propValue == 'true') ? true : false;
+      propValue = propValue == 'true' ? true : false;
     }
 
-    propValue = (typeof propDefault != 'undefined' && !propValue) ? propDefault : propValue; 
+    propValue =
+      typeof propDefault != 'undefined' && !propValue ? propDefault : propValue;
 
     return propValue;
-    
   }
-  
-
 })();

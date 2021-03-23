@@ -7,10 +7,21 @@
             <div class="description">Простой инпут с заданой шириной</div>
             <Input: width="250" ></Input:>
         </div>
+        
         <div class="story">
             <div class="description">Инпут с нестираемой частью</div>
-            <Input: static="https://mysite.com/" ></Input:>
-        </div>    
+            <Input: static="https://mysite.com/" autofocus="true" ></Input:>
+        </div> 
+        
+        <div class="story">
+            <div class="description">Инпут с типом number</div>
+            <Input: type="number" value="1000" ></Input:>
+        </div>
+
+        <div class="story">
+            <div class="description">Инпут размера M</div>
+            <Input: size="m" placeholder="Имя Фамилия" ></Input:>
+        </div>
 
         <script src="../../src/fast.js"></script>
         <script>
