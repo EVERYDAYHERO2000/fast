@@ -14,8 +14,7 @@
         { '@root': '' },
         { '@components': '__fast__.config.componentsDirectory' },
         {
-          '@component':
-            '${__fast__.config.componentsDirectory}/${componentName}/assets'
+          '@component': '${__fast__.config.componentsDirectory}/${componentName}/assets'
         }
       ],
       /** Расширение файлов компонента */
@@ -169,93 +168,7 @@
     }
   }
 
-  /**
-   * Возвращает назваине компонента из имени тега.
-   * @param {String} tagName — название тега
-   */
-  function getComponentName(tagName) {
-    return (
-      tagName[0] + tagName.toLowerCase().slice(1).replace(CONFIG.tagSign, '')
-    );
-  }
-
-  /**
-   * Является ли атрибут листнером события.
-   *
-   * @param {String} attrName - название атрибута
-   */
-  function isEventAttribute(attrName) {
-    return attrName.indexOf('on') + 1 == 1 && attrName.length > 2
-      ? true
-      : false;
-  }
-
-  /**
-   * Является ли тэг указателем на компонент.
-   *
-   * @param {String} name — имя компонента
-   */
-  function tagNameIsComponent(name) {
-    return name.includes(CONFIG.tagSign) ? true : false;
-  }
-
-  /**
-   * Хелпер для циклов по массиву.
-   *
-   * @param {Object} obj - объект для перебора
-   * @param {Function} callback - калбек с аргументами (ключ, значение)
-   */
-  function forEachObject(obj, callback) {
-    Object.keys(obj).forEach((key) => {
-      callback(key, obj[key]);
-    });
-  }
-
-  /**
-   * Хелпер выбора элемента. Возвращает html элемент.
-   *
-   * @param {HTMLElement} $from - где выбирать
-   * @param {String} selector - css селектор
-   */
-  function selectNode($from, selector) {
-    return $from.querySelector(selector);
-  }
-
-  /**
-   * Хелпер выбора элемента. Возвращает коллекцию элементов.
-   *
-   * @param {HTMLElement} $from - где выбирать
-   * @param {String} selector - css селектор
-   */
-  function selectAllNode($from, selector) {
-    return $from.querySelectorAll(selector);
-  }
-
-  /**
-   * Хелпер клонирующий объекты.
-   *
-   * @param {Object} obj - клонируемый объект
-   */
-  function clonePropObject(obj) {
-    let newObj = {};
-    forEachObject(obj, (key, value) => {
-      newObj[key] = {
-        type: value.type.name,
-        default: typeof value.default != 'undefined' ? value.default : null
-      };
-    });
-
-    return newObj;
-  }
-
-  /**
-   * Проверка установлен ли компонент.
-   *
-   * @param {String} name — имя компонента
-   */
-  function isInstalled(name) {
-    return COMPONENTS[name] ? true : false;
-  }
+  
 
   /**
    * Загрузить компоненты из файлов.
@@ -294,17 +207,22 @@
    * @param {String} componentName - имя компонента
    */
   function parseTemplate(context, componentName) {
-    context = context.replace(/\s+/gi, ' ');
 
     let stringTemplate, stringScript, stringStyle;
 
     context
       .replace(
-        /<template.*?>(.*?)<\/template>/gi,
+        /<template\b[^>]*>([\s\S]*?)<\/template>/gmi,
         (a, b) => (stringTemplate = b)
       )
-      .replace(/<script.*?>(.*?)<\/script>/gi, (a, b) => (stringScript = b))
-      .replace(/<style.*?>(.*?)<\/style>/gi, (a, b) => (stringStyle = b));
+      .replace(
+        /<script\b[^>]*>([\s\S]*?)<\/script>/gmi, 
+        (a, b) => (stringScript = b)
+      )
+      .replace(
+        /<style\b[^>]*>([\s\S]*?)<\/style>/gmi, 
+        (a, b) => (stringStyle = b)
+      );
 
     return {
       stringTemplate: cookTemplate(stringTemplate, componentName),
@@ -324,19 +242,12 @@
 
     /**
      * Интерполяция названий методов в инлайновых обработчиках событий
-     * пример on:click="${onClick}" => on:click="onClick"
+     * пример onclick="${onClick}" => onclick="onClick"
      * методы событий крепятся к экземпляру компонента на этапе создания экземпляра
      * */
     fragment = fragment.replace(
       /on([a-z]+)=['"]?\$\{([\w\d_]+)\}['"]?/gi,
-      (e, a, b) => {
-        return `on${a}="${b}"`;
-      }
-    );
-
-    fragment = fragment.replace(/(\${.+\})/gi, (e, i) => {
-      return i.replaceAll('&gt;', '>').replaceAll('&lt;', '<');
-    });
+      (e, a, b) => `on${a}="${b}"`);
 
     return fragment;
   }
@@ -660,25 +571,112 @@
     inSlot.parentElement.replaceChild(outSlot, inSlot);
   }
 
+  /**
+   * Проверяет и приводит к типу значение пропса
+   * 
+   * @param {Object} prop - объект пропса компонента
+   */
   function checkProp(prop) {
-    let propValue = prop.value;
-    const propType = prop.type;
+    let propValue = prop.value || null;
+    const propType = prop.type || 'String';
     const propDefault = prop.default;
 
-    if (prop.type.name == 'String') {
-    } else if (propType == 'Number') {
-      propValue = +propValue;
-    } else if (propType == 'Object') {
-      propValue = JSON.parse(propType);
-    } else if (propType == 'Array') {
-      propValue = JSON.parse(propType);
-    } else if (propType == 'Boolean') {
-      propValue = propValue == 'true' ? true : false;
-    }
-
-    propValue =
-      typeof propDefault != 'undefined' && !propValue ? propDefault : propValue;
-
-    return propValue;
+    if (propValue != null) {
+      if (propType != 'String') {
+        propValue = (new Function(`return ${propValue}`))();
+      } else {
+        propValue = `${propValue}`;
+      }
+    }  
+    return typeof propDefault != 'undefined' && !propValue ? propDefault : propValue;
   }
+
+  /**
+   * Возвращает назваине компонента из имени тега.
+   * @param {String} tagName — название тега
+   */
+  function getComponentName(tagName) {
+    return (
+      tagName[0] + tagName.toLowerCase().slice(1).replace(CONFIG.tagSign, '')
+    );
+  }
+
+  /**
+   * Является ли атрибут листнером события.
+   *
+   * @param {String} attrName - название атрибута
+   */
+  function isEventAttribute(attrName) {
+    return attrName.indexOf('on') + 1 == 1 && attrName.length > 2
+      ? true
+      : false;
+  }
+
+  /**
+   * Является ли тэг указателем на компонент.
+   *
+   * @param {String} name — имя компонента
+   */
+  function tagNameIsComponent(name) {
+    return name.includes(CONFIG.tagSign) ? true : false;
+  }
+
+  /**
+   * Хелпер для циклов по массиву.
+   *
+   * @param {Object} obj - объект для перебора
+   * @param {Function} callback - калбек с аргументами (ключ, значение)
+   */
+  function forEachObject(obj, callback) {
+    Object.keys(obj).forEach((key) => {
+      callback(key, obj[key]);
+    });
+  }
+
+  /**
+   * Хелпер выбора элемента. Возвращает html элемент.
+   *
+   * @param {HTMLElement} $from - где выбирать
+   * @param {String} selector - css селектор
+   */
+  function selectNode($from, selector) {
+    return $from.querySelector(selector);
+  }
+
+  /**
+   * Хелпер выбора элемента. Возвращает коллекцию элементов.
+   *
+   * @param {HTMLElement} $from - где выбирать
+   * @param {String} selector - css селектор
+   */
+  function selectAllNode($from, selector) {
+    return $from.querySelectorAll(selector);
+  }
+
+  /**
+   * Хелпер клонирующий объекты.
+   *
+   * @param {Object} obj - клонируемый объект
+   */
+  function clonePropObject(obj) {
+    let newObj = {};
+    forEachObject(obj, (key, value) => {
+      newObj[key] = {
+        type: value.type.name,
+        default: typeof value.default != 'undefined' ? value.default : null
+      };
+    });
+
+    return newObj;
+  }
+
+  /**
+   * Проверка установлен ли компонент.
+   *
+   * @param {String} name — имя компонента
+   */
+  function isInstalled(name) {
+    return COMPONENTS[name] ? true : false;
+  }
+
 })();
