@@ -543,17 +543,17 @@
 
           for (let inSlot of newElemSlots) {
             const inSlotName = inSlot.getAttribute('name');
-            if (outSlotName == inSlotName) slotToSlot(outSlot, inSlot);
+            if (outSlotName == inSlotName) replaseElement(inSlot, outSlot); 
           }
         }
 
         //все в один слот
       } else {
-        slotToSlot($elem, newElemSlots[0]);
+        replaseElement($elem, newElemSlots[0]);
       }
     }
 
-    $elem.parentElement.replaceChild($componentInstance, $elem);
+    replaseElement($elem, $componentInstance);
     COMPONENTS[componentName].instances.push($componentInstance);
     $componentInstance.__mounted(callbackObject);
 
@@ -563,15 +563,6 @@
 
   }
 
-  /**
-   * Переместить узлы в слот.
-   *
-   * @param {NodeList} childs - набор узлов для перемещения
-   * @param {Element} slot - узел слота `<slot>`
-   */
-  function slotToSlot(outSlot, inSlot) {
-    inSlot.parentElement.replaceChild(outSlot, inSlot);
-  }
 
   /**
    * Проверяет и приводит к типу значение пропса
@@ -679,6 +670,16 @@
    */
   function isInstalled(name) {
     return COMPONENTS[name] ? true : false;
+  }
+
+  /**
+   * Хелпер заменяющий элемент.
+   * 
+   * @param {HTMLElement} $elem - елемент который требуется заменить
+   * @param {*} $newElem — новый элемент
+   */
+  function replaseElement($elem, $newElem){
+    return $elem.parentElement.replaceChild($newElem, $elem);
   }
 
 })();
