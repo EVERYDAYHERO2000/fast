@@ -3,34 +3,25 @@
     <head>
     </head>
     <body>
-        <div class="story">
-            <div class="description">Простой инпут с заданой шириной</div>
-            <Input: width="250" ></Input:>
-        </div>
+        <Story: description="Простой инпут с заданой шириной">
+            <slot name="main"><Input: width="250" ></Input:></slot>
+        </Story:>
         
-        <div class="story">
-            <div class="description">Инпут с нестираемой частью</div>
-            <Input: static="https://mysite.com/" placeholder="?alpha=true&beta=false" autofocus="true" ></Input:>
-        </div> 
+        <Story: description="Инпут с нестираемой частью">
+            <slot name="main"><Input: static="https://mysite.com/" placeholder="?alpha=true&beta=false" autofocus="true" ></Input:></slot>
+        </Story:> 
         
-        <div class="story">
-            <div class="description">Инпут с типом number</div>
-            <Input: type="number" value="1000" ></Input:>
-        </div>
+        <Story: description="Инпут с типом number">
+            <slot name="main"><Input: type="number" value="1000" ></Input:></slot>
+        </Story:>
 
-        <div class="story">
-            <div class="description">Инпут размера M</div>
-            <Input: size="m" placeholder="Имя Фамилия" ></Input:>
-        </div>
+        <Story: description="Инпут размера M">
+            <slot name="main"><Input: size="m" placeholder="Имя Фамилия" ></Input:></slot>
+        </Story:>
 
         <script src="../../src/fast.js"></script>
         <script>
-            Fast.init(
-                {
-                    components: [],
-                    css: `body {font-family:sans-serif;} .story {margin: 48px 0;} .description {margin: 24px 0;}`
-                }
-            );
+            Fast.init();
         </script>
     </body>
 </html>

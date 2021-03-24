@@ -70,7 +70,8 @@
       const $instance = $conteiner.children[0];
       return {
         instance : $instance,
-        methods : newInstance.methods  
+        methods : newInstance.methods,
+        props : newInstance.props  
       }
     }
   }
@@ -371,9 +372,11 @@
       const cp = `const checkProp = Fast.checkProp;\n`;
 
       /** Пропсы компонента */
+      let varsName = '';
       const vars = ((props) => {
         return Object.keys(props)
           .map((v) => {
+            varsName += `${v}:${v},`;
             return `const ${v} = checkProp(props.${v});\n`;
           })
           .join('');
@@ -381,7 +384,7 @@
 
       return new Function(
         'props',
-        `${cp}${dataset}${vars}${fns} return {methods:{${fnsName}},template:\`${stringTemplate}\`}`
+        `${cp}${dataset}${vars}${fns} return {methods:{${fnsName}},props:{${varsName}},template:\`${stringTemplate}\`}`
       );
     })(js, stringTemplate);
 

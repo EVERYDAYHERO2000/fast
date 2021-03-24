@@ -1,0 +1,32 @@
+<template>
+    <div class="story">
+        <div class="story__description">${description}</div>
+        <div class="story__content">
+            <slot name="main"></slot>
+        </div>
+    </div>
+</template>
+
+<script>
+    ({
+        props: {
+            description: {
+                type: String
+            }
+        }
+    })
+</script>
+
+<style>
+    .story {
+        font-size: 14px;
+        font-family: sans-serif;
+        margin: 48px 0;
+    }
+    .story__description {
+        margin: 0 0 24px 0;
+    }
+    .sory__content {
+
+    }
+</style>
