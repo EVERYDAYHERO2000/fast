@@ -63,6 +63,7 @@
     }
 
     render(props) {
+  
       const newInstance = this.template(props);
       const $conteiner = document.createElement('div');
       $conteiner.innerHTML = newInstance.template;
